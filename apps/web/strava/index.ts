@@ -1,0 +1,1 @@
+export { getActivities } from "./getActivities";

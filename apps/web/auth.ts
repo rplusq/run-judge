@@ -4,8 +4,16 @@ import NextAuth, { NextAuthResult } from "next-auth";
 import Strava from "next-auth/providers/strava";
 
 const nextAuth = NextAuth({
-  providers: [Strava],
+  providers: [
+    Strava({ authorization: { params: { scope: "read,activity:read" } } }),
+  ],
   adapter: PrismaAdapter(prisma),
+  callbacks: {
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated
+      return !!auth
+    }
+  }
 });
 
 export const signIn: NextAuthResult["signIn"] = nextAuth.signIn;
