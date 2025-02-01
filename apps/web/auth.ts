@@ -1,9 +1,10 @@
 import { prisma } from "@/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth, { NextAuthResult } from "next-auth";
+import Strava from "next-auth/providers/strava";
 
 const nextAuth = NextAuth({
-  providers: [],
+  providers: [Strava],
   adapter: PrismaAdapter(prisma),
 });
 

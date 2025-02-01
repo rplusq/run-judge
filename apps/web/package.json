@@ -9,9 +9,10 @@
     "start": "next start",
     "lint": "next lint --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "prisma:migrate:dev": "DATABASE_URL=file:./runjudge.db prisma migrate dev --schema prisma/schema-sqlite.prisma",
+    "prisma:migrate:dev": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/runjudge prisma migrate dev --schema prisma/schema.prisma",
     "prisma:migrate:prod": "prisma migrate deploy",
-    "prisma:generate": "prisma generate --schema prisma/schema-sqlite.prisma"
+    "prisma:migrate:reset": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/runjudge prisma migrate reset --schema prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
