@@ -1,5 +1,5 @@
-import Image, { type ImageProps } from "next/image";
 import { Button } from "@repo/ui/button";
+import Image, { type ImageProps } from "next/image";
 import styles from "./page.module.css";
 
 type Props = Omit<ImageProps, "src"> & {
@@ -94,7 +94,7 @@ export default function Home() {
             width={16}
             height={16}
           />
-          Go to turbo.build →
+          Go to turbo.pajita → aaaa
         </a>
       </footer>
     </div>
