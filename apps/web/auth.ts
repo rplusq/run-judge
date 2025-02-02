@@ -5,15 +5,31 @@ import Strava from "next-auth/providers/strava";
 
 const nextAuth = NextAuth({
   providers: [
-    Strava({ authorization: { params: { scope: "read,activity:read" } } }),
+    Strava({
+      clientId: process.env.STRAVA_CLIENT_ID!,
+      clientSecret: process.env.STRAVA_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "read",
+        },
+      },
+    }),
   ],
   adapter: PrismaAdapter(prisma),
   callbacks: {
     authorized: async ({ auth }) => {
       // Logged in users are authenticated
-      return !!auth
-    }
-  }
+      return !!auth;
+    },
+    redirect: async ({ url, baseUrl }) => {
+      // After successful sign in, redirect to the activity page
+      if (url.startsWith(baseUrl)) {
+        return `${baseUrl}/activity`;
+      }
+      return baseUrl;
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET!,
 });
 
 export const signIn: NextAuthResult["signIn"] = nextAuth.signIn;

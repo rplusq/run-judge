@@ -1,3 +1,19 @@
+import { Header } from "./components/header";
+import { Hero } from "./components/hero";
+import { Features } from "./components/features";
+import { AIJudgment } from "./components/ai-judgment";
+import { Challenges } from "./components/challenges";
+import { Stats } from "./components/stats";
+
 export default function Home() {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between">
+      <Header />
+      <Hero />
+      <Features />
+      <AIJudgment />
+      <Challenges />
+      <Stats />
+    </main>
+  );
 }
