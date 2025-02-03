@@ -1,8 +1,8 @@
-import { Header } from "./components/header";
-import { Hero } from "./components/hero";
-import { Features } from "./components/features";
 import { AIJudgment } from "./components/ai-judgment";
 import { Challenges } from "./components/challenges";
+import { Features } from "./components/features";
+import { Header } from "./components/header";
+import { Hero } from "./components/hero";
 import { Stats } from "./components/stats";
 
 export default function Home() {
