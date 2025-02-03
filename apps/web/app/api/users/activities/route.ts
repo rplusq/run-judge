@@ -1,9 +1,10 @@
+import { auth } from "@/auth";
 import { prisma } from "@/prisma";
 import { getActivities } from "@/strava";
-import { type NextRequest } from "next/server";
 
-export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get("userId");
+export async function GET() {
+  const session = await auth();
+  const userId = session?.user?.id;
 
   if (!userId) {
     return Response.json({ error: "Missing userId" }, { status: 400 });
