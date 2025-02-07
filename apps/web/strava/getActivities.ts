@@ -1,4 +1,4 @@
-import { Activity, STRAVA_BASE_URL, StravaConfig } from "./types";
+import { ActivitySummary, STRAVA_BASE_URL, StravaConfig } from "./types";
 
 export async function getActivities(
   config: StravaConfig,
@@ -7,7 +7,7 @@ export async function getActivities(
     after?: number;
     page?: number;
   },
-): Promise<Activity[]> {
+): Promise<ActivitySummary[]> {
   const searchParams = new URLSearchParams();
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
