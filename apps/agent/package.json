@@ -1,0 +1,29 @@
+{
+  "name": "@run-judge/agent",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.4.0",
+    "@coinbase/agentkit": "^0.1",
+    "@coinbase/agentkit-langchain": "^0.1.0",
+    "@coinbase/onchainkit": "^0.36.9",
+    "@langchain/core": "^0.3.37",
+    "@langchain/langgraph": "^0.2.44",
+    "@langchain/openai": "^0.4.2",
+    "dotenv": "^16.3.1",
+    "hono": "^3.12.6",
+    "viem": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

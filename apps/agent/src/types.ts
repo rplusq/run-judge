@@ -6,7 +6,4 @@ export type AgentConfig = {
   };
 };
 
-export type AgentInit = {
-  agent: ReturnType<typeof createReactAgent>;
-  config: AgentConfig;
-}
+export type Agent = ReturnType<typeof createReactAgent>;
