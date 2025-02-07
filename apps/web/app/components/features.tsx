@@ -1,4 +1,4 @@
-import { Calendar, Users, Bot, Trophy } from "lucide-react"
+import { Bot, Calendar, Trophy, Users } from "lucide-react";
 
 const features = [
   {
