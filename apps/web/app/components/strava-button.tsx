@@ -1,7 +1,7 @@
 "use client";
 
-import { MonitorIcon as Running } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MonitorIcon as Running } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 export function StravaButton() {

@@ -10,7 +10,7 @@ const nextAuth = NextAuth({
       clientSecret: process.env.STRAVA_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: "read",
+          scope: "read,activity:read_all",
         },
       },
     }),
@@ -24,12 +24,11 @@ const nextAuth = NextAuth({
     redirect: async ({ url, baseUrl }) => {
       // After successful sign in, redirect to the activity page
       if (url.startsWith(baseUrl)) {
-        return `${baseUrl}/activity`;
+        return `${baseUrl}`;
       }
       return baseUrl;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET!,
 });
 
 export const signIn: NextAuthResult["signIn"] = nextAuth.signIn;

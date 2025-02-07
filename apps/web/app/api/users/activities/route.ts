@@ -30,7 +30,5 @@ export async function GET() {
     accessToken: userAccount.access_token,
   });
 
-  console.log(activities);
-
-  return Response.json({ status: "OK" });
+  return Response.json(activities);
 }

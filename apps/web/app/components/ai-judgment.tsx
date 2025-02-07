@@ -11,7 +11,7 @@ export function AIJudgment() {
           </div>
           <div className="bg-gray-700 rounded-lg p-4 flex-1">
             <p className="text-gray-300">
-              Alright, runners! I've analyzed your Strava data and local weather reports. Looks like we've got a winner!
+              Alright, runners! I&apos;ve analyzed your Strava data and local weather reports. Looks like we've got a winner!
               🏆
             </p>
           </div>
@@ -34,7 +34,7 @@ export function AIJudgment() {
           </div>
           <div className="bg-gray-700 rounded-lg p-4 flex-1">
             <p className="text-gray-300">
-              Drumroll, please... 🥁 It's @SpeedyGonzales! They crushed that 5K in 22:30, despite the surprise
+              Drumroll, please... 🥁 It&apos;s @SpeedyGonzales! They crushed that 5K in 22:30, despite the surprise
               rainstorm. Talk about dedication! The rest of you... maybe try running instead of scrolling Strava next
               time? 😉
             </p>
