@@ -35,7 +35,6 @@
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
-    "twitter-api-v2": "^1.19.1",
     "viem": "^2.22.17",
     "wagmi": "^2.14.9"
   },
