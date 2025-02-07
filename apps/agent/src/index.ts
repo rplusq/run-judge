@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { Agent } from "./agent";
 import { config } from "dotenv";
+import { capturePageWithCookies } from "./browser";
 
 // Load environment variables
 config();
@@ -40,6 +41,24 @@ app.post("/analyze", async (c) => {
   } catch (error) {
     console.error("Error in analyze endpoint:", error);
     return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
+// Screenshot endpoint
+app.post("/screenshot", async (c) => {
+  const body = await c.req.json();
+  const { url, cookies } = body;
+
+  if (!url || !cookies) {
+    return c.json({ error: "URL and cookies are required" }, 400);
+  }
+
+  try {
+    const screenshotPath = await capturePageWithCookies(url, cookies);
+    return c.json({ success: true, path: screenshotPath });
+  } catch (error) {
+    console.error("Screenshot error:", error);
+    return c.json({ error: "Failed to capture screenshot" }, 500);
   }
 });
 
