@@ -7,3 +7,8 @@ export type AgentConfig = {
 };
 
 export type Agent = ReturnType<typeof createReactAgent>;
+
+export type ActivityResponse = {
+  valid: boolean;
+  message: string;
+}

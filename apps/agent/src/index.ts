@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { Agent } from "./agent";
 import { capturePageWithCookies } from "./browser";
 import { compressScreenshot } from "./compressScreenshot";
+import { ActivityResponse } from "./types";
 
 // Load environment variables
 config();
@@ -49,23 +50,20 @@ app.post("/analyze", async (c) => {
 
     console.log("Starting analysis...");
     const stream = await agent.analyze(compressedScreenshot);
-    const chunks = [];
+
+    let chunkAcc: string = "";
 
     for await (const chunk of stream) {
-      console.log('Received chunk type:',
-        "agent" in chunk ? "agent" :
-        "tools" in chunk ? "tools" :
-        "unknown"
-      );
-
       if ("agent" in chunk) {
-        chunks.push(chunk.agent.messages[0].content);
-      } else if ("tools" in chunk) {
-        chunks.push(chunk.tools.messages[0].content);
+        chunkAcc += chunk.agent.messages[0].content;
       }
     }
 
-    return c.json({ status: 'ok', response: chunks })
+    // Sometimes the model returns json markup. We need to remove it
+    const cleanedChunk = chunkAcc.replace("```json", '').replace("```", '');
+    const parsedResponse: ActivityResponse = JSON.parse(cleanedChunk);
+
+    return c.json(parsedResponse)
   } catch (error) {
     console.error("Error in analyze endpoint:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
