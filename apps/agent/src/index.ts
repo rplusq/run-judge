@@ -1,9 +1,10 @@
 import { serve } from "@hono/node-server";
+import { config } from "dotenv";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { Agent } from "./agent";
-import { config } from "dotenv";
 import { capturePageWithCookies } from "./browser";
+import { compressScreenshot } from "./compressScreenshot";
 
 // Load environment variables
 config();
@@ -27,38 +28,52 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 app.post("/analyze", async (c) => {
   try {
     const body = await c.req.json();
-    const { input } = body;
+    const { url } = body;
 
-    if (!input || typeof input !== "string") {
+    if (!url) {
       return c.json({ error: "Invalid input" }, 400);
     }
 
-    const stream = await agent.analyze(input);
+    const base64Cookies = process.env.AGENT_SCREENSHOT_COOKIES!;
+    const strCookies = atob(base64Cookies)
+    const parsedCookies = JSON.parse(strCookies);
 
-    // Convert the stream to response
-    const response = new Response(stream as any);
-    return response;
+    // This takes an actual screentshot of the page... 🤫🤫🤫
+    console.log("Capturing screenshot...");
+    const screenshot = await capturePageWithCookies(url, parsedCookies);
+    console.log("Screenshot captured, size:", screenshot.length);
+
+    console.log("Compressing screenshot...");
+    const compressedScreenshot = await compressScreenshot(screenshot);
+    console.log("Compressed screenshot size:", compressedScreenshot.length);
+
+    console.log("Starting analysis...");
+    const stream = await agent.analyze(compressedScreenshot);
+    const chunks = [];
+
+    for await (const chunk of stream) {
+      console.log('Received chunk type:',
+        "agent" in chunk ? "agent" :
+        "tools" in chunk ? "tools" :
+        "unknown"
+      );
+
+      if ("agent" in chunk) {
+        chunks.push(chunk.agent.messages[0].content);
+      } else if ("tools" in chunk) {
+        chunks.push(chunk.tools.messages[0].content);
+      }
+    }
+
+    return c.json({ status: 'ok', response: chunks })
   } catch (error) {
     console.error("Error in analyze endpoint:", error);
-    return c.json({ error: "Internal server error" }, 500);
-  }
-});
-
-// Screenshot endpoint
-app.post("/screenshot", async (c) => {
-  const body = await c.req.json();
-  const { url, cookies } = body;
-
-  if (!url || !cookies) {
-    return c.json({ error: "URL and cookies are required" }, 400);
-  }
-
-  try {
-    const screenshotPath = await capturePageWithCookies(url, cookies);
-    return c.json({ success: true, path: screenshotPath });
-  } catch (error) {
-    console.error("Screenshot error:", error);
-    return c.json({ error: "Failed to capture screenshot" }, 500);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return c.json({
+      error: "Internal server error",
+      details: errorMessage,
+      phase: "analyze"
+    }, 500);
   }
 });
 

@@ -26,7 +26,7 @@ export class Agent {
   async initialize(): Promise<void> {
     try {
       const llm = new ChatOpenAI({
-        model: "qwen/qwen-turbo",
+        model: "google/gemini-2.0-flash-001",
         configuration: {
           baseURL: "https://openrouter.ai/api/v1",
           apiKey: process.env.OPENROUTER_API_KEY,
@@ -87,26 +87,53 @@ export class Agent {
   }
 
   async analyze(
-    input: string
+    base64Image: string
   ): Promise<IterableReadableStream<PregelOutputType>> {
     if (!this.agent) {
       throw new Error("Agent not initialized");
     }
 
-    try {
-      console.log("Starting agent analysis with input:", input);
+    if (!base64Image) {
+      throw new Error("No image data provided");
+    }
 
+    try {
+      console.log("Starting agent analysis with image length:", base64Image.length);
+      console.log("Creating message content...");
+
+      console.log("Preparing image content...");
+      const message = new HumanMessage({
+        content: [
+          {
+            type: "text",
+            text: "Analyze this image from Strava and deduce whether or not any " +
+                  "manipulation was done."
+          },
+          {
+            type: "image_url",
+            image_url: `data:image/png;base64,${base64Image}`
+          }
+        ]
+      });
+
+      console.log("Sending to model...");
       const stream = await this.agent.stream(
         {
-          messages: [new HumanMessage(input)],
+          messages: [message]
         },
         this.config
       );
-
-      console.log("Stream created successfully");
+      console.log("Stream received from model");
       return stream;
     } catch (error) {
       console.error("Error in agentAnalyze:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        });
+      }
       throw error;
     }
   }

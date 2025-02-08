@@ -1,6 +1,6 @@
-import { chromium } from "playwright";
 import fs from "fs/promises";
 import path from "path";
+import { chromium } from "playwright";
 
 // CookieEditor format
 interface CookieEditorCookie {
@@ -70,7 +70,7 @@ function convertCookieEditorFormat(cookies: CookieEditorCookie[]): Cookie[] {
 export async function capturePageWithCookies(
   url: string,
   cookies: CookieEditorCookie[] | Cookie[]
-): Promise<string> {
+): Promise<Buffer> {
   console.log(`📸 Capturing ${url}`);
 
   const playwrightCookies =
@@ -181,54 +181,49 @@ export async function capturePageWithCookies(
         });
 
       // Take initial screenshot
-      const debugDir = path.join(process.cwd(), "debug-screenshots");
-      await fs.mkdir(debugDir, { recursive: true });
-      await page.screenshot({
-        path: path.join(debugDir, "1-initial-load.png"),
-        fullPage: true,
-      });
+      // const debugDir = path.join(process.cwd(), "debug-screenshots");
+      // await fs.mkdir(debugDir, { recursive: true });
+      // await page.screenshot({
+      //   path: path.join(debugDir, "1-initial-load.png"),
+      //   fullPage: true,
+      // });
 
-      // Try to close the login modal if it exists
-      console.log("🔍 Checking for login modal...");
-      try {
-        const closeButton = await page.waitForSelector(
-          "button.Button_btn__GRPGo.Button_icon__Pjpe3.SignUpModal_closeButton__ZFCEi",
-          { timeout: 5000 }
-        );
-        if (closeButton) {
-          console.log("🚪 Closing login modal...");
-          await closeButton.click();
-          await page.waitForTimeout(1000); // Wait for modal animation
+      // // Try to close the login modal if it exists
+      // console.log("🔍 Checking for login modal...");
+      // try {
+      //   const closeButton = await page.waitForSelector(
+      //     "button.Button_btn__GRPGo.Button_icon__Pjpe3.SignUpModal_closeButton__ZFCEi",
+      //     { timeout: 5000 }
+      //   );
+      //   if (closeButton) {
+      //     console.log("🚪 Closing login modal...");
+      //     await closeButton.click();
+      //     await page.waitForTimeout(1000); // Wait for modal animation
 
-          // Take post-modal screenshot
-          await page.screenshot({
-            path: path.join(debugDir, "2-after-modal.png"),
-            fullPage: true,
-          });
-        }
-      } catch (modalErr) {
-        console.log("✓ No login modal found");
-      }
+      //     // Take post-modal screenshot
+      //     await page.screenshot({
+      //       path: path.join(debugDir, "2-after-modal.png"),
+      //       fullPage: true,
+      //     });
+      //   }
+      // } catch (modalErr) {
+      //   console.log("✓ No login modal found");
+      // }
 
       // Log the HTML content
-      const content = await page.content();
-      console.log("\n🔍 Page HTML:");
-      console.log("----------------------------------------");
-      console.log(content.slice(0, 500) + "..."); // First 500 chars
-      console.log("----------------------------------------");
-
-      // Check if we're getting a login page
-      if (
-        content.toLowerCase().includes("log in") ||
-        content.toLowerCase().includes("sign in")
-      ) {
-        console.log("⚠️ Detected login page, cookies might be invalid");
-        // Take screenshot of login page
-        await page.screenshot({
-          path: path.join(debugDir, "3-login-detected.png"),
-          fullPage: true,
-        });
-      }
+      // const content = await page.content();
+      // // Check if we're getting a login page
+      // if (
+      //   content.toLowerCase().includes("log in") ||
+      //   content.toLowerCase().includes("sign in")
+      // ) {
+      //   console.log("⚠️ Detected login page, cookies might be invalid");
+      //   // Take screenshot of login page
+      //   await page.screenshot({
+      //     path: path.join(debugDir, "3-login-detected.png"),
+      //     fullPage: true,
+      //   });
+      // }
 
       // Wait for either the title or the elevation profile
       console.log("⏳ Waiting for content...");
@@ -238,10 +233,10 @@ export async function capturePageWithCookies(
       ]);
 
       // Take pre-final screenshot
-      await page.screenshot({
-        path: path.join(debugDir, "4-content-loaded.png"),
-        fullPage: true,
-      });
+      // await page.screenshot({
+      //   path: path.join(debugDir, "content-loaded.png"),
+      //   fullPage: true,
+      // });
 
       // Small delay for dynamic content
       await page.waitForTimeout(1000);
@@ -254,15 +249,17 @@ export async function capturePageWithCookies(
     const screenshotsDir = path.join(process.cwd(), "screenshots");
     await fs.mkdir(screenshotsDir, { recursive: true });
 
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const screenshotPath = path.join(
-      screenshotsDir,
-      `screenshot-${timestamp}.png`
-    );
-    await page.screenshot({ path: screenshotPath, fullPage: true });
+    // const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    // const screenshotPath = path.join(
+    //   screenshotsDir,
+    //   `screenshot-${timestamp}.png`
+    // );
 
-    console.log(`✅ Screenshot saved: ${screenshotPath}`);
-    return screenshotPath;
+    const screenshotBuf = await page.screenshot({ fullPage: true });
+
+    console.log(`✅ Screenshot saved`);
+
+    return screenshotBuf;
   } catch (err) {
     const error = err as Error;
     console.error("❌ Capture failed:", error.message);
