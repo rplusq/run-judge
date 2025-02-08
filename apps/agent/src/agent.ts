@@ -5,7 +5,6 @@ import {
   MessageContent,
   MessageContentComplex,
 } from '@langchain/core/messages';
-import { MemorySaver } from '@langchain/langgraph';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
 import { createWalletClient, http, type Hex } from 'viem';
@@ -41,7 +40,6 @@ export class Agent {
         },
       });
 
-      console.log('Creating wallet client...');
       const agentAccount = privateKeyToAccount(
         process.env.AGENT_PRIVATE_KEY as Hex
       );
@@ -52,33 +50,22 @@ export class Agent {
       });
 
       const walletProvider = new ViemWalletProvider(walletClient);
-      console.log('Creating AgentKit...');
       const agentKit = await AgentKit.from({
         walletProvider,
         actionProviders: [runJudgeActionProvider],
       });
 
-      console.log('Getting LangChain tools...');
       const tools = await getLangChainTools(agentKit);
 
-      const memory = new MemorySaver();
-
-      console.log('Creating React agent...');
       this.agent = createReactAgent({
         llm,
         tools,
-        checkpointSaver: memory,
         // Taken from the quickstart guide in the CDP docs as we do not need
         // any state modifier specific for our on-chain use case
         stateModifier: `
         You are a helpful agent that can interact onchain using the Coinbase Developer Platform AgentKit.
         You are empowered to interact onchain using your tools. If you ever need funds, you can request
-        them from the faucet if you are on network ID 'base-sepolia'. If not, you can provide your wallet
-        details and request funds from the user. If someone asks you to do something you can't do with your
-        currently available tools, you must say so, and encourage them to implement it themselves using the
-        CDP SDK + Agentkit, recommend they go to docs.cdp.coinbase.com for more informaton. Be concise and
-        helpful with your responses. Refrain from restating your tools' descriptions unless it is
-        explicitly requested,
+        them from the faucet if you are on network ID 'base-sepolia'.
         `,
       });
 
