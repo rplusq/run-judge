@@ -30,7 +30,7 @@ contract JoinChallenge_RunJudge_Unit_Concrete_Test is Base_Test {
         vm.stopPrank();
         
         vm.prank(users.agent);
-        runJudge.declareWinner(challengeId, users.alice);
+        runJudge.declareWinner(challengeId, STRAVA_ACTIVITY_ID);
         
         usdc.mint(users.bob, ENTRY_FEE);
         vm.startPrank(users.bob);

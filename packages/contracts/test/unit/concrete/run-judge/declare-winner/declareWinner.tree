@@ -4,12 +4,12 @@ declareWinner.t.sol
 # when caller is agent
 ## when challenge is not active
 ### it should revert
-## when winner has not submitted result
+## when activity ID does not match any submission
 ### it should revert
 ## when USDC transfer fails
 ### it should revert
 ## when all conditions are met
 ### it should mark challenge as inactive
-### it should set the winner
-### it should transfer the prize
-### it should emit a {WinnerDeclared} event 
+### it should set the winner based on activity ID
+### it should transfer the prize to the activity owner
+### it should emit a {WinnerDeclared} event with activity ID 

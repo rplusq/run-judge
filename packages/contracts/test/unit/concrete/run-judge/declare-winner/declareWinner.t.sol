@@ -11,6 +11,7 @@ contract DeclareWinner_RunJudge_Unit_Concrete_Test is Base_Test {
     uint256 challengeId;
     uint40 startTime;
     uint256 constant STRAVA_ACTIVITY_ID = 13550360546;
+    uint256 constant INVALID_ACTIVITY_ID = 99999999999;
 
     function setUp() public override {
         super.setUp();
@@ -33,7 +34,7 @@ contract DeclareWinner_RunJudge_Unit_Concrete_Test is Base_Test {
     function test_RevertWhen_CallerIsNotAgent() external {
         vm.prank(users.alice);
         vm.expectRevert(RunJudge.OnlyAgent.selector);
-        runJudge.declareWinner(challengeId, users.alice);
+        runJudge.declareWinner(challengeId, STRAVA_ACTIVITY_ID);
     }
 
     modifier whenCallerIsAgent() {
@@ -42,15 +43,15 @@ contract DeclareWinner_RunJudge_Unit_Concrete_Test is Base_Test {
     }
 
     function test_RevertWhen_ChallengeNotActive() external whenCallerIsAgent {
-        runJudge.declareWinner(challengeId, users.alice);
+        runJudge.declareWinner(challengeId, STRAVA_ACTIVITY_ID);
         
         vm.expectRevert(RunJudge.ChallengeNotActive.selector);
-        runJudge.declareWinner(challengeId, users.alice);
+        runJudge.declareWinner(challengeId, STRAVA_ACTIVITY_ID);
     }
 
-    function test_RevertWhen_WinnerHasNotSubmitted() external whenCallerIsAgent {
+    function test_RevertWhen_ActivityIdDoesNotMatchAnySubmission() external whenCallerIsAgent {
         vm.expectRevert(RunJudge.WinnerNotSubmitted.selector);
-        runJudge.declareWinner(challengeId, users.bob);
+        runJudge.declareWinner(challengeId, INVALID_ACTIVITY_ID);
     }
 
     function test_RevertWhen_USDCTransferFails() external whenCallerIsAgent {
@@ -61,25 +62,25 @@ contract DeclareWinner_RunJudge_Unit_Concrete_Test is Base_Test {
         vm.startPrank(users.agent);
         
         vm.expectRevert(abi.encodeWithSelector(IERC20Errors.ERC20InsufficientBalance.selector, address(runJudge), 0, ENTRY_FEE));
-        runJudge.declareWinner(challengeId, users.alice);
+        runJudge.declareWinner(challengeId, STRAVA_ACTIVITY_ID);
     }
 
     function test_WhenAllConditionsAreMet() external whenCallerIsAgent {
         uint256 aliceBalanceBefore = usdc.balanceOf(users.alice);
 
-        // Verify event emission
+        // Verify event emission with activity ID
         vm.expectEmit({emitter: address(runJudge)});
-        emit WinnerDeclared(challengeId, users.alice, ENTRY_FEE);
+        emit WinnerDeclared(challengeId, STRAVA_ACTIVITY_ID, users.alice, ENTRY_FEE);
 
-        runJudge.declareWinner(challengeId, users.alice);
+        runJudge.declareWinner(challengeId, STRAVA_ACTIVITY_ID);
 
         // Verify challenge is marked as inactive
         (,,,bool isActive, address winner, uint256 totalPrize) = runJudge.challenges(challengeId);
         assertFalse(isActive, "Challenge should be inactive");
-        assertEq(winner, users.alice, "Winner should be set");
+        assertEq(winner, users.alice, "Winner should be set based on activity ID");
         assertEq(totalPrize, ENTRY_FEE, "Total prize should be unchanged");
 
-        // Verify winner received prize
-        assertEq(usdc.balanceOf(users.alice), aliceBalanceBefore + ENTRY_FEE, "Winner should receive prize");
+        // Verify activity owner received prize
+        assertEq(usdc.balanceOf(users.alice), aliceBalanceBefore + ENTRY_FEE, "Activity owner should receive prize");
     }
 } 

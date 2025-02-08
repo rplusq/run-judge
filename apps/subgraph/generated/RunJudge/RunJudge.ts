@@ -84,28 +84,6 @@ export class OwnershipTransferred__Params {
   }
 }
 
-export class ParticipantSlashed extends ethereum.Event {
-  get params(): ParticipantSlashed__Params {
-    return new ParticipantSlashed__Params(this);
-  }
-}
-
-export class ParticipantSlashed__Params {
-  _event: ParticipantSlashed;
-
-  constructor(event: ParticipantSlashed) {
-    this._event = event;
-  }
-
-  get challengeId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get participant(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-}
-
 export class ResultSubmitted extends ethereum.Event {
   get params(): ResultSubmitted__Params {
     return new ResultSubmitted__Params(this);
@@ -149,12 +127,16 @@ export class WinnerDeclared__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
+  get stravaActivityId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
   get winner(): Address {
-    return this._event.parameters[1].value.toAddress();
+    return this._event.parameters[2].value.toAddress();
   }
 
   get prize(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -578,8 +560,8 @@ export class DeclareWinnerCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
-  get winner(): Address {
-    return this._call.inputValues[1].value.toAddress();
+  get stravaActivityId(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
   }
 }
 
@@ -673,40 +655,6 @@ export class SetAgentCall__Outputs {
   _call: SetAgentCall;
 
   constructor(call: SetAgentCall) {
-    this._call = call;
-  }
-}
-
-export class SlashCall extends ethereum.Call {
-  get inputs(): SlashCall__Inputs {
-    return new SlashCall__Inputs(this);
-  }
-
-  get outputs(): SlashCall__Outputs {
-    return new SlashCall__Outputs(this);
-  }
-}
-
-export class SlashCall__Inputs {
-  _call: SlashCall;
-
-  constructor(call: SlashCall) {
-    this._call = call;
-  }
-
-  get challengeId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get cheater(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-}
-
-export class SlashCall__Outputs {
-  _call: SlashCall;
-
-  constructor(call: SlashCall) {
     this._call = call;
   }
 }
