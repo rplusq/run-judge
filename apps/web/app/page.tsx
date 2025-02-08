@@ -1,19 +1,11 @@
-import { AIJudgment } from "./components/ai-judgment";
-import { Challenges } from "./components/challenges";
-import { Features } from "./components/features";
-import { Header } from "./components/header";
-import { Hero } from "./components/hero";
-import { Stats } from "./components/stats";
+import { Hero } from '@/components/hero';
+import { HowItWorks } from '@/components/how-it-works';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between">
-      <Header />
+    <main>
       <Hero />
-      <Features />
-      <AIJudgment />
-      <Challenges />
-      <Stats />
+      <HowItWorks />
     </main>
   );
 }
