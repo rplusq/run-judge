@@ -5,6 +5,7 @@ type Challenge @entity {
   entryFee: BigInt!
   isActive: Boolean!
   winner: Bytes
+  winningActivityId: BigInt
   totalPrize: BigInt!
   participants: [Participant!]! @derivedFrom(field: "challenge")
   createdAt: BigInt!

@@ -74,7 +74,7 @@ contract RunJudge is Ownable {
     event ChallengeCreated(uint256 indexed challengeId, uint40 startTime, uint32 distance, uint256 entryFee);
     event ChallengeJoined(uint256 indexed challengeId, address indexed participant);
     event ResultSubmitted(uint256 indexed challengeId, address indexed participant, uint256 stravaActivityId);
-    event WinnerDeclared(uint256 indexed challengeId, address indexed winner, uint256 prize);
+    event WinnerDeclared(uint256 indexed challengeId, uint256 indexed stravaActivityId, address winner, uint256 prize);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                       CONSTRUCTOR                         */
@@ -158,18 +158,30 @@ contract RunJudge is Ownable {
 
     /// @notice Declare winner and distribute prize
     /// @param challengeId The ID of the challenge
-    /// @param winner Address of the winner
-    function declareWinner(uint256 challengeId, address winner) external onlyAgent {
+    /// @param stravaActivityId ID of the winning Strava activity
+    function declareWinner(uint256 challengeId, uint256 stravaActivityId) external onlyAgent {
         Challenge storage challenge = challenges[challengeId];
         if (!challenge.isActive) revert ChallengeNotActive();
-        if (!participants[challengeId][winner].hasSubmitted) revert WinnerNotSubmitted();
+
+        // Find participant with matching activity ID
+        address winner;
+        address[] memory participantList = challengeParticipants[challengeId];
+        for (uint256 i = 0; i < participantList.length; i++) {
+            Participant memory participant = participants[challengeId][participantList[i]];
+            if (participant.stravaActivityId == stravaActivityId) {
+                winner = participantList[i];
+                break;
+            }
+        }
+
+        if (winner == address(0) || !participants[challengeId][winner].hasSubmitted) revert WinnerNotSubmitted();
 
         challenge.isActive = false;
         challenge.winner = winner;
 
         usdc.safeTransfer(winner, challenge.totalPrize);
 
-        emit WinnerDeclared(challengeId, winner, challenge.totalPrize);
+        emit WinnerDeclared(challengeId, stravaActivityId, winner, challenge.totalPrize);
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

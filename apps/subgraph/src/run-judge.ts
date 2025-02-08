@@ -59,6 +59,7 @@ export function handleWinnerDeclared(event: WinnerDeclared): void {
   if (challenge) {
     challenge.isActive = false;
     challenge.winner = event.params.winner;
+    challenge.winningActivityId = event.params.stravaActivityId;
     challenge.save();
   }
 

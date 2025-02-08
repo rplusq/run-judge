@@ -119,6 +119,23 @@ export class Challenge extends Entity {
     }
   }
 
+  get winningActivityId(): BigInt | null {
+    let value = this.get("winningActivityId");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set winningActivityId(value: BigInt | null) {
+    if (!value) {
+      this.unset("winningActivityId");
+    } else {
+      this.set("winningActivityId", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
   get totalPrize(): BigInt {
     let value = this.get("totalPrize");
     if (!value || value.kind == ValueKind.NULL) {
