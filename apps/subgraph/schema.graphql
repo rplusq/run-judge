@@ -1,0 +1,23 @@
+type Challenge @entity {
+  id: ID!
+  startTime: BigInt!
+  distance: BigInt!
+  entryFee: BigInt!
+  isActive: Boolean!
+  winner: Bytes
+  totalPrize: BigInt!
+  participants: [Participant!]! @derivedFrom(field: "challenge")
+  createdAt: BigInt!
+}
+
+type Participant @entity {
+  id: ID!
+  challenge: Challenge!
+  participant: Bytes!
+  hasJoined: Boolean!
+  hasSubmitted: Boolean!
+  stravaActivityId: BigInt
+  isWinner: Boolean!
+  joinedAt: BigInt!
+  submittedAt: BigInt
+}

@@ -55,8 +55,8 @@ contract RunJudge is Ownable {
         bool hasJoined;
         /// @dev Whether participant has submitted result
         bool hasSubmitted;
-        /// @dev Strava activity URL for verification
-        string stravaUrl;
+        /// @dev Strava activity ID for verification
+        uint256 stravaActivityId;
     }
 
     /// @dev challengeId => Challenge
@@ -74,7 +74,7 @@ contract RunJudge is Ownable {
 
     event ChallengeCreated(uint256 indexed challengeId, uint40 startTime, uint32 distance, uint256 entryFee);
     event ChallengeJoined(uint256 indexed challengeId, address indexed participant);
-    event ResultSubmitted(uint256 indexed challengeId, address indexed participant, string stravaUrl);
+    event ResultSubmitted(uint256 indexed challengeId, address indexed participant, uint256 stravaActivityId);
     event WinnerDeclared(uint256 indexed challengeId, address indexed winner, uint256 prize);
     event ParticipantSlashed(uint256 indexed challengeId, address indexed participant);
 
@@ -144,18 +144,18 @@ contract RunJudge is Ownable {
         emit ChallengeJoined(challengeId, msg.sender);
     }
 
-    /// @notice Submit Strava activity URL as proof of completion
+    /// @notice Submit Strava activity ID as proof of completion
     /// @param challengeId The ID of the challenge
-    /// @param stravaUrl URL of the Strava activity
-    function submitResult(uint256 challengeId, string calldata stravaUrl) external {
+    /// @param stravaActivityId ID of the Strava activity
+    function submitResult(uint256 challengeId, uint256 stravaActivityId) external {
         if (!participants[challengeId][msg.sender].hasJoined) revert NotJoined();
         if (participants[challengeId][msg.sender].hasSubmitted) revert AlreadySubmitted();
         if (block.timestamp <= challenges[challengeId].startTime) revert ChallengeNotStarted();
 
         participants[challengeId][msg.sender].hasSubmitted = true;
-        participants[challengeId][msg.sender].stravaUrl = stravaUrl;
+        participants[challengeId][msg.sender].stravaActivityId = stravaActivityId;
 
-        emit ResultSubmitted(challengeId, msg.sender, stravaUrl);
+        emit ResultSubmitted(challengeId, msg.sender, stravaActivityId);
     }
 
     /// @notice Declare winner and distribute prize

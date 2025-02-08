@@ -10,6 +10,7 @@ contract JoinChallenge_RunJudge_Unit_Concrete_Test is Base_Test {
     uint256 constant ENTRY_FEE = 10e6; // 10 USDC
     uint256 challengeId;
     uint40 startTime;
+    uint256 constant STRAVA_ACTIVITY_ID = 13550360546;
 
     function setUp() public override {
         super.setUp();
@@ -25,7 +26,7 @@ contract JoinChallenge_RunJudge_Unit_Concrete_Test is Base_Test {
         vm.startPrank(users.alice);
         runJudge.joinChallenge(challengeId);
         vm.warp(startTime + 1);
-        runJudge.submitResult(challengeId, "https://strava.com/activities/123");
+        runJudge.submitResult(challengeId, STRAVA_ACTIVITY_ID);
         vm.stopPrank();
         
         vm.prank(users.agent);
