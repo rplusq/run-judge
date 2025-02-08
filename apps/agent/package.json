@@ -21,7 +21,8 @@
     "hono": "^3.12.6",
     "playwright": "^1.41.2",
     "sharp": "^0.33.5",
-    "viem": "^2.5.0"
+    "viem": "^2.5.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.16",
