@@ -19,7 +19,6 @@
     "@coinbase/agentkit": "^0.1",
     "@coinbase/agentkit-langchain": "^0.1.0",
     "@coinbase/onchainkit": "^0.36.9",
-    "@next/env": "^15.1.6",
     "@prisma/client": "^6.3.0",
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-radio-group": "^1.2.2",

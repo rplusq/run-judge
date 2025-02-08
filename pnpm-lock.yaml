@@ -50,13 +50,22 @@ importers:
       playwright:
         specifier: ^1.41.2
         version: 1.50.1
+      sharp:
+        specifier: ^0.33.5
+        version: 0.33.5
       viem:
         specifier: ^2.5.0
         version: 2.22.21(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)
+      zod:
+        specifier: ^3.24.1
+        version: 3.24.1
     devDependencies:
       '@types/node':
         specifier: ^20.11.16
         version: 20.17.17
+      '@types/sharp':
+        specifier: ^0.32.0
+        version: 0.32.0
       tsx:
         specifier: ^4.7.0
         version: 4.19.2
@@ -78,9 +87,6 @@ importers:
       '@coinbase/onchainkit':
         specifier: ^0.36.9
         version: 0.36.9(@tanstack/query-core@5.66.0)(@types/react@19.0.8)(bufferutil@4.0.9)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.1)
-      '@next/env':
-        specifier: ^15.1.6
-        version: 15.1.6
       '@prisma/client':
         specifier: ^6.3.0
         version: 6.3.0(prisma@6.3.0(typescript@5.7.3))(typescript@5.7.3)
@@ -1222,6 +1228,10 @@ packages:
 
   '@types/retry@0.12.0':
     resolution: {integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==}
+
+  '@types/sharp@0.32.0':
+    resolution: {integrity: sha512-OOi3kL+FZDnPhVzsfD37J88FNeZh6gQsGcLc95NbeURRGvmSjeXiDcyWzF2o3yh/gQAUn2uhh/e+CPCa5nwAxw==}
+    deprecated: This is a stub types definition. sharp provides its own type definitions, so you do not need this installed.
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -4841,6 +4851,10 @@ snapshots:
 
   '@types/retry@0.12.0': {}
 
+  '@types/sharp@0.32.0':
+    dependencies:
+      sharp: 0.33.5
+
   '@types/trusted-types@2.0.7': {}
 
   '@types/uuid@10.0.0': {}
@@ -5621,13 +5635,11 @@ snapshots:
     dependencies:
       color-name: 1.1.4
       simple-swizzle: 0.2.2
-    optional: true
 
   color@4.2.3:
     dependencies:
       color-convert: 2.0.1
       color-string: 1.9.1
-    optional: true
 
   combined-stream@1.0.8:
     dependencies:
@@ -5745,8 +5757,7 @@ snapshots:
 
   detect-browser@5.3.0: {}
 
-  detect-libc@2.0.3:
-    optional: true
+  detect-libc@2.0.3: {}
 
   didyoumean@1.2.2: {}
 
@@ -6385,8 +6396,7 @@ snapshots:
       call-bound: 1.0.3
       get-intrinsic: 1.2.7
 
-  is-arrayish@0.3.2:
-    optional: true
+  is-arrayish@0.3.2: {}
 
   is-async-function@2.1.1:
     dependencies:
@@ -7282,7 +7292,6 @@ snapshots:
       '@img/sharp-wasm32': 0.33.5
       '@img/sharp-win32-ia32': 0.33.5
       '@img/sharp-win32-x64': 0.33.5
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:
@@ -7323,7 +7332,6 @@ snapshots:
   simple-swizzle@0.2.2:
     dependencies:
       is-arrayish: 0.3.2
-    optional: true
 
   simple-wcswidth@1.0.1: {}
 
