@@ -4,7 +4,6 @@ import {
   ChallengeJoined,
   ResultSubmitted,
   WinnerDeclared,
-  ParticipantSlashed,
 } from '../generated/RunJudge/RunJudge';
 import { Challenge, Participant } from '../generated/schema';
 
@@ -70,18 +69,6 @@ export function handleWinnerDeclared(event: WinnerDeclared): void {
   let participant = Participant.load(id);
   if (participant) {
     participant.isWinner = true;
-    participant.save();
-  }
-}
-
-export function handleParticipantSlashed(event: ParticipantSlashed): void {
-  const id =
-    event.params.challengeId.toString() +
-    '-' +
-    event.params.participant.toHexString();
-  let participant = Participant.load(id);
-  if (participant) {
-    participant.hasSubmitted = false;
     participant.save();
   }
 }

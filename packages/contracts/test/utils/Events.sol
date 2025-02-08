@@ -11,7 +11,6 @@ abstract contract Events {
     event ChallengeJoined(uint256 indexed challengeId, address indexed participant);
     event ResultSubmitted(uint256 indexed challengeId, address indexed participant, uint256 stravaActivityId);
     event WinnerDeclared(uint256 indexed challengeId, address indexed winner, uint256 prize);
-    event ParticipantSlashed(uint256 indexed challengeId, address indexed participant);
 
     /*//////////////////////////////////////////////////////////////////////////
                                      ERC20 Events

@@ -24,7 +24,6 @@ contract RunJudge is Ownable {
     error ChallengeNotStarted();
     error WinnerNotSubmitted();
     error PrizeTransferFailed();
-    error NotSubmitted();
     error InvalidAddress();
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                         STORAGE                           */
@@ -76,14 +75,13 @@ contract RunJudge is Ownable {
     event ChallengeJoined(uint256 indexed challengeId, address indexed participant);
     event ResultSubmitted(uint256 indexed challengeId, address indexed participant, uint256 stravaActivityId);
     event WinnerDeclared(uint256 indexed challengeId, address indexed winner, uint256 prize);
-    event ParticipantSlashed(uint256 indexed challengeId, address indexed participant);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                       CONSTRUCTOR                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     /// @notice Initializes the contract with USDC token and agent addresses
     /// @param _usdc The USDC token contract address
-    /// @param _agent The address authorized to declare winners and slash cheaters
+    /// @param _agent The address authorized to declare winners
     constructor(address _usdc, address _agent) Ownable(msg.sender) {
         if (_usdc == address(0)) revert InvalidAddress();
         if (_agent == address(0)) revert InvalidAddress();
@@ -172,16 +170,6 @@ contract RunJudge is Ownable {
         usdc.safeTransfer(winner, challenge.totalPrize);
 
         emit WinnerDeclared(challengeId, winner, challenge.totalPrize);
-    }
-
-    /// @notice Slash a participant for cheating
-    /// @param challengeId The ID of the challenge
-    /// @param cheater Address of the cheating participant
-    function slash(uint256 challengeId, address cheater) external onlyAgent {
-        if (!participants[challengeId][cheater].hasSubmitted) revert NotSubmitted();
-        
-        participants[challengeId][cheater].hasSubmitted = false;
-        emit ParticipantSlashed(challengeId, cheater);
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

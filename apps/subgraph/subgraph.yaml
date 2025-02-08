@@ -28,6 +28,4 @@ dataSources:
           handler: handleResultSubmitted
         - event: WinnerDeclared(indexed uint256,indexed address,uint256)
           handler: handleWinnerDeclared
-        - event: ParticipantSlashed(indexed uint256,indexed address)
-          handler: handleParticipantSlashed
       file: ./src/run-judge.ts
