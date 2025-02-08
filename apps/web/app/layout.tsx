@@ -1,16 +1,15 @@
-import "@coinbase/onchainkit/styles.css";
-import "./globals.css";
-import { Inter } from "next/font/google";
-import { cn } from "@/lib/utils";
-import type React from "react"; // Import React
-import { Providers } from "./providers";
+import '@coinbase/onchainkit/styles.css';
+import './globals.css';
+import { Inter } from 'next/font/google';
+import { Providers } from './providers';
+import { Header } from '@/components/header';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: "RunJudge - Fair Play for Fitness Bets",
+  title: 'RunJudge - Challenge friends to run together',
   description:
-    "Synchronized Saturday runs, verified by AI, winner takes the yield-generating prize pool",
+    'Create running challenges with friends, set a prize pool, and let our AI judge verify the winner through Strava.',
 };
 
 export default function RootLayout({
@@ -19,14 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body
-        className={cn(
-          inter.className,
-          "bg-gray-900 text-gray-100 min-h-screen"
-        )}
-      >
-        <Providers>{children}</Providers>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );
