@@ -9,9 +9,16 @@ export type AgentConfig = {
 
 export type Agent = ReturnType<typeof createReactAgent>;
 
-export type ActivityResponse = {
+type ActivityAnalysis = {
   valid: boolean;
   message: string;
+  activityId: number;
+};
+
+export type ActivityResponse = {
+  analysis: ActivityAnalysis[];
+  analysisOutcome: string;
+  winnerActivityId: number;
 };
 
 export type AgentAnalyzeInput = {
@@ -20,8 +27,9 @@ export type AgentAnalyzeInput = {
 };
 
 export const agentAnalyzeRequestSchema = z.object({
+  challengeId: z.number().describe('The ID of the challenge'),
   // For now we have capable of analyzing two activities only
-  urls: z.array(z.string().url()).length(2),
+  activityIds: z.array(z.number()).length(2),
 });
 
 export type AgentAnalyzeRequest = z.infer<typeof agentAnalyzeRequestSchema>;

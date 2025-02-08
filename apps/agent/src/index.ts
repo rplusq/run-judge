@@ -17,6 +17,8 @@ config();
 const app = new Hono();
 const agent = new Agent();
 
+const STRAVA_URL = 'https://www.strava.com/activities';
+
 // Initialize agent
 agent.initialize().catch((error) => {
   console.error('Failed to initialize agent:', error);
@@ -27,7 +29,7 @@ agent.initialize().catch((error) => {
 app.use('*', cors());
 
 // Health check endpoint
-app.get('/health', (c) => c.json({ status: 'ok' }));
+app.get('/health', async (c) => c.json({ status: 'ok' }));
 
 // Agent endpoint
 app.post('/analyze', async (c) => {
@@ -39,6 +41,8 @@ app.post('/analyze', async (c) => {
       return c.json({ error: 'Invalid input' }, 400);
     }
 
+    const urls = parsedBody.data.activityIds.map((id) => `${STRAVA_URL}/${id}`);
+
     const base64Cookies = process.env.AGENT_SCREENSHOT_COOKIES!;
     const strCookies = atob(base64Cookies);
     const parsedCookies = JSON.parse(strCookies);
@@ -46,7 +50,7 @@ app.post('/analyze', async (c) => {
     const inputToAnalyze: AgentAnalyzeInput[] = [];
 
     // This takes an actual screentshot of the page... 🤫🤫🤫
-    for (const url of parsedBody.data.urls) {
+    for (const url of urls) {
       const screenshot = await capturePageWithCookies(url, parsedCookies);
 
       const data: AgentAnalyzeInput = {
@@ -59,19 +63,16 @@ app.post('/analyze', async (c) => {
       inputToAnalyze.push(data);
     }
 
-    const stream = await agent.analyze(inputToAnalyze);
-
-    let chunkAcc: string = '';
-
-    for await (const chunk of stream) {
-      if ('agent' in chunk) {
-        chunkAcc += chunk.agent.messages[0].content;
-      }
-    }
+    const response = await agent.analyze(inputToAnalyze);
 
     // Sometimes the model returns json markup. We need to remove it
-    const cleanedChunk = chunkAcc.replace('```json', '').replace('```', '');
+    const cleanedChunk = response.replace('```json', '').replace('```', '');
     const parsedResponse: ActivityResponse = JSON.parse(cleanedChunk);
+
+    // Run another action in the background from the output of the initial
+    // analysis
+    console.log('🔍 Checking activity outcome...');
+    agent.analyzeActivityOutcome(parsedBody.data.challengeId, parsedResponse);
 
     return c.json(parsedResponse);
   } catch (error) {
