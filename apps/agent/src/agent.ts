@@ -106,8 +106,22 @@ export class Agent {
         content: [
           {
             type: "text",
-            text: "Analyze this image from Strava and deduce whether or not any " +
-                  "manipulation was done."
+            text: `Analyze this image from Strava and deduce whether or not any
+                  manipulation was done. Reply in this JSON format and only in this
+                  format.
+
+                  {
+                    "valid": boolean,
+                    "message": string
+                  }
+
+                  Where "valid" means whether or not the image was manipulated and
+                  "message" is a brief summary of your analysis. The "message" field
+                  needs to be done in a sassy and funny way. Try to keep it to max
+                  150 characters.
+
+                  ALWAYS reply in the JSON format. DO NOT output anything else
+                  `
           },
           {
             type: "image_url",
