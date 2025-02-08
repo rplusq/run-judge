@@ -1,18 +1,17 @@
 import sharp from 'sharp';
 
 // Returns a base64 string of the compressed screenshot
-export async function compressScreenshot(
-  input: Buffer
-): Promise<string> {
+export async function compressScreenshot(input: Buffer): Promise<string> {
   try {
     const image = sharp(input)
-      .resize(1000, 1000, {  // Max dimensions that maintain legibility
+      .resize(800, 800, {
+        // Max dimensions that maintain legibility
         fit: 'inside',
-        withoutEnlargement: true
+        withoutEnlargement: true,
       })
       .png({
-        quality: 50,
-        compressionLevel: 9
+        quality: 40,
+        compressionLevel: 9,
       });
 
     const compressedBuffer = await image.toBuffer();
