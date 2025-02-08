@@ -10,7 +10,7 @@ contract DeclareWinner_RunJudge_Unit_Concrete_Test is Base_Test {
     uint256 constant ENTRY_FEE = 10e6; // 10 USDC
     uint256 challengeId;
     uint40 startTime;
-    string constant STRAVA_URL = "https://strava.com/activities/123";
+    uint256 constant STRAVA_ACTIVITY_ID = 13550360546;
 
     function setUp() public override {
         super.setUp();
@@ -27,7 +27,7 @@ contract DeclareWinner_RunJudge_Unit_Concrete_Test is Base_Test {
         // Warp to after start time and submit result
         vm.warp(startTime + 1);
         vm.prank(users.alice);
-        runJudge.submitResult(challengeId, STRAVA_URL);
+        runJudge.submitResult(challengeId, STRAVA_ACTIVITY_ID);
     }
 
     function test_RevertWhen_CallerIsNotAgent() external {

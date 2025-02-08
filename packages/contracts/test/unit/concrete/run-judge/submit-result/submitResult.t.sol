@@ -9,7 +9,7 @@ contract SubmitResult_RunJudge_Unit_Concrete_Test is Base_Test {
     uint256 constant ENTRY_FEE = 10e6; // 10 USDC
     uint256 challengeId;
     uint40 startTime;
-    string constant STRAVA_URL = "https://strava.com/activities/123";
+    uint256 constant STRAVA_ACTIVITY_ID = 13550360546;
 
     function setUp() public override {
         super.setUp();
@@ -26,23 +26,23 @@ contract SubmitResult_RunJudge_Unit_Concrete_Test is Base_Test {
         vm.warp(startTime + 1);
         vm.prank(users.bob);
         vm.expectRevert(RunJudge.NotJoined.selector);
-        runJudge.submitResult(challengeId, STRAVA_URL);
+        runJudge.submitResult(challengeId, STRAVA_ACTIVITY_ID);
     }
 
     function test_RevertWhen_ParticipantHasAlreadySubmitted() external {
         vm.warp(startTime + 1);
         vm.startPrank(users.alice);
-        runJudge.submitResult(challengeId, STRAVA_URL);
+        runJudge.submitResult(challengeId, STRAVA_ACTIVITY_ID);
         
         vm.expectRevert(RunJudge.AlreadySubmitted.selector);
-        runJudge.submitResult(challengeId, STRAVA_URL);
+        runJudge.submitResult(challengeId, STRAVA_ACTIVITY_ID);
         vm.stopPrank();
     }
 
     function test_RevertWhen_ChallengeHasNotStarted() external {
         vm.prank(users.alice);
         vm.expectRevert(RunJudge.ChallengeNotStarted.selector);
-        runJudge.submitResult(challengeId, STRAVA_URL);
+        runJudge.submitResult(challengeId, STRAVA_ACTIVITY_ID);
     }
 
     function test_WhenAllConditionsAreMet() external {
@@ -50,15 +50,15 @@ contract SubmitResult_RunJudge_Unit_Concrete_Test is Base_Test {
 
         // Verify event emission
         vm.expectEmit({emitter: address(runJudge)});
-        emit ResultSubmitted(challengeId, users.alice, STRAVA_URL);
+        emit ResultSubmitted(challengeId, users.alice, STRAVA_ACTIVITY_ID);
 
         vm.prank(users.alice);
-        runJudge.submitResult(challengeId, STRAVA_URL);
+        runJudge.submitResult(challengeId, STRAVA_ACTIVITY_ID);
 
         // Verify participant is marked as submitted
-        (bool hasJoined, bool hasSubmitted, string memory stravaUrl) = runJudge.participants(challengeId, users.alice);
+        (bool hasJoined, bool hasSubmitted, uint256 stravaActivityId) = runJudge.participants(challengeId, users.alice);
         assertTrue(hasJoined, "Participant should be marked as joined");
         assertTrue(hasSubmitted, "Participant should be marked as submitted");
-        assertEq(stravaUrl, STRAVA_URL, "Strava URL should be stored");
+        assertEq(stravaActivityId, STRAVA_ACTIVITY_ID, "Strava activity ID should be stored");
     }
 } 

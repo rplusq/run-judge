@@ -1,0 +1,33 @@
+specVersion: 0.0.8
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: RunJudge
+    network: base-sepolia
+    source:
+      address: '0x16a31ef6A50712212d0702d05c895969b3b58E1f'
+      abi: RunJudge
+      startBlock: 21636195
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Challenge
+        - Participant
+      abis:
+        - name: RunJudge
+          file: ../../packages/contracts/out/RunJudge.sol/RunJudge.json
+      eventHandlers:
+        - event: ChallengeCreated(indexed uint256,uint40,uint32,uint256)
+          handler: handleChallengeCreated
+        - event: ChallengeJoined(indexed uint256,indexed address)
+          handler: handleChallengeJoined
+        - event: ResultSubmitted(indexed uint256,indexed address,uint256)
+          handler: handleResultSubmitted
+        - event: WinnerDeclared(indexed uint256,indexed address,uint256)
+          handler: handleWinnerDeclared
+        - event: ParticipantSlashed(indexed uint256,indexed address)
+          handler: handleParticipantSlashed
+      file: ./src/run-judge.ts
