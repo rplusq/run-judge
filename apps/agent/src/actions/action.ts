@@ -1,30 +1,10 @@
 import { customActionProvider, ViemWalletProvider } from '@coinbase/agentkit';
 import { encodeFunctionData } from 'viem';
 import { z } from 'zod';
+import { runJudgeABI } from './abi';
 import { DeclareWinnerSchema } from './schemas';
 
 const RUN_JUDGE_ADDRESS = '0xbabeC3dF164f14672c08AA277Af9936532c283Ba';
-
-const runJudgeABI = [
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'challengeId',
-        type: 'uint256',
-      },
-      {
-        internalType: 'uint256',
-        name: 'stravaActivityId',
-        type: 'uint256',
-      },
-    ],
-    name: 'declareWinner',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-] as const;
 
 export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
   name: 'declare_winner',
