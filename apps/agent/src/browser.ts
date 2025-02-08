@@ -30,7 +30,7 @@ interface Cookie {
 }
 
 function convertCookieEditorFormat(cookies: CookieEditorCookie[]): Cookie[] {
-  console.log("Converting cookies:");
+  console.log("🍪 Converting cookies");
   return cookies.map((cookie) => {
     // Always use .strava.com for Strava cookies
     const domain = cookie.domain.includes("strava.com")
@@ -47,11 +47,7 @@ function convertCookieEditorFormat(cookies: CookieEditorCookie[]): Cookie[] {
           ? "Lax"
           : cookie.sameSite?.toLowerCase() === "strict"
             ? "Strict"
-            : "Lax"; // Default to Lax instead of None
-
-    console.log(
-      `  ${cookie.name}: domain=${domain}, sameSite=${sameSite}, secure=${cookie.secure}, session=${cookie.session}`
-    );
+          : "Lax"; // Default to Lax instead of None
 
     return {
       name: cookie.name,
