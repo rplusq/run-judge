@@ -1,0 +1,9 @@
+slash.t.sol
+# when caller is not agent
+## it should revert
+# when caller is agent
+## when participant has not submitted
+### it should revert
+## when all conditions are met
+### it should mark participant as not submitted
+### it should emit a {ParticipantSlashed} event 

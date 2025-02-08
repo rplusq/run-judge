@@ -1,0 +1,14 @@
+joinChallenge.t.sol
+├── when challenge is not active
+│   └── it should revert
+├── when challenge has started
+│   └── it should revert
+├── when caller has already joined
+│   └── it should revert
+├── when USDC transfer fails
+│   └── it should revert
+└── when all conditions are met
+    ├── it should mark participant as joined
+    ├── it should add participant to challengeParticipants array
+    ├── it should increase challenge totalPrize
+    └── it should emit a {ChallengeJoined} event

@@ -1,0 +1,7 @@
+createChallenge.t.sol
+├── when start time is in the past
+│   └── it should revert
+└── when start time is in the future
+    ├── it should create challenge with correct values
+    ├── it should increment nextChallengeId
+    └── it should emit a {ChallengeCreated} event with correct params
