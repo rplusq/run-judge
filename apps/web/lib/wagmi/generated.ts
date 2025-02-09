@@ -191,6 +191,31 @@ export const eventsAbi = [
     anonymous: false,
     inputs: [
       {
+        name: 'challengeId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      {
+        name: 'participant',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'stravaActivityId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'ActivitySubmitted',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
         name: 'owner',
         internalType: 'address',
         type: 'address',
@@ -210,6 +235,31 @@ export const eventsAbi = [
       },
     ],
     name: 'Approval',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'challengeId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      {
+        name: 'creator',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'refundAmount',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'ChallengeCancelled',
   },
   {
     type: 'event',
@@ -260,31 +310,6 @@ export const eventsAbi = [
       },
     ],
     name: 'ChallengeJoined',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
-      {
-        name: 'challengeId',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: true,
-      },
-      {
-        name: 'participant',
-        internalType: 'address',
-        type: 'address',
-        indexed: true,
-      },
-      {
-        name: 'stravaActivityId',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-    ],
-    name: 'ResultSubmitted',
   },
   {
     type: 'event',
@@ -1088,7 +1113,7 @@ export const ownableAbi = [
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const runJudgeAbi = [
   {
@@ -1102,7 +1127,28 @@ export const runJudgeAbi = [
   {
     type: 'function',
     inputs: [],
+    name: 'MAX_PARTICIPANTS',
+    outputs: [{ name: '', internalType: 'uint8', type: 'uint8' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
     name: 'agent',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'challengeId', internalType: 'uint256', type: 'uint256' }],
+    name: 'cancelChallenge',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'challengeId', internalType: 'uint256', type: 'uint256' }],
+    name: 'challengeCreators',
     outputs: [{ name: '', internalType: 'address', type: 'address' }],
     stateMutability: 'view',
   },
@@ -1127,6 +1173,7 @@ export const runJudgeAbi = [
       { name: 'isActive', internalType: 'bool', type: 'bool' },
       { name: 'winner', internalType: 'address', type: 'address' },
       { name: 'totalPrize', internalType: 'uint256', type: 'uint256' },
+      { name: 'participantCount', internalType: 'uint8', type: 'uint8' },
     ],
     stateMutability: 'view',
   },
@@ -1206,7 +1253,7 @@ export const runJudgeAbi = [
       { name: 'challengeId', internalType: 'uint256', type: 'uint256' },
       { name: 'stravaActivityId', internalType: 'uint256', type: 'uint256' },
     ],
-    name: 'submitResult',
+    name: 'submitActivity',
     outputs: [],
     stateMutability: 'nonpayable',
   },
@@ -1223,6 +1270,56 @@ export const runJudgeAbi = [
     name: 'usdc',
     outputs: [{ name: '', internalType: 'contract IERC20', type: 'address' }],
     stateMutability: 'view',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'challengeId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      {
+        name: 'participant',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'stravaActivityId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'ActivitySubmitted',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'challengeId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      {
+        name: 'creator',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'refundAmount',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'ChallengeCancelled',
   },
   {
     type: 'event',
@@ -1304,31 +1401,6 @@ export const runJudgeAbi = [
         indexed: true,
       },
       {
-        name: 'participant',
-        internalType: 'address',
-        type: 'address',
-        indexed: true,
-      },
-      {
-        name: 'stravaActivityId',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-    ],
-    name: 'ResultSubmitted',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
-      {
-        name: 'challengeId',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: true,
-      },
-      {
         name: 'stravaActivityId',
         internalType: 'uint256',
         type: 'uint256',
@@ -1351,10 +1423,16 @@ export const runJudgeAbi = [
   },
   { type: 'error', inputs: [], name: 'AlreadyJoined' },
   { type: 'error', inputs: [], name: 'AlreadySubmitted' },
+  { type: 'error', inputs: [], name: 'ChallengeFull' },
   { type: 'error', inputs: [], name: 'ChallengeNotActive' },
   { type: 'error', inputs: [], name: 'ChallengeNotStarted' },
   { type: 'error', inputs: [], name: 'ChallengeStarted' },
+  { type: 'error', inputs: [], name: 'InvalidActivityId' },
   { type: 'error', inputs: [], name: 'InvalidAddress' },
+  { type: 'error', inputs: [], name: 'InvalidChallenge' },
+  { type: 'error', inputs: [], name: 'InvalidDistance' },
+  { type: 'error', inputs: [], name: 'InvalidEntryFee' },
+  { type: 'error', inputs: [], name: 'NotChallengeCreator' },
   { type: 'error', inputs: [], name: 'NotJoined' },
   { type: 'error', inputs: [], name: 'OnlyAgent' },
   {
@@ -1367,6 +1445,7 @@ export const runJudgeAbi = [
     inputs: [{ name: 'account', internalType: 'address', type: 'address' }],
     name: 'OwnableUnauthorizedAccount',
   },
+  { type: 'error', inputs: [], name: 'ParticipantsNotSubmitted' },
   { type: 'error', inputs: [], name: 'PrizeTransferFailed' },
   {
     type: 'error',
@@ -1379,14 +1458,14 @@ export const runJudgeAbi = [
 ] as const;
 
 /**
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const runJudgeAddress = {
-  84532: '0xbabeC3dF164f14672c08AA277Af9936532c283Ba',
+  84532: '0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0',
 } as const;
 
 /**
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const runJudgeConfig = {
   address: runJudgeAddress,
@@ -1621,12 +1700,30 @@ export const useWatchEventsEvent = /*#__PURE__*/ createUseWatchContractEvent({
 });
 
 /**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link eventsAbi}__ and `eventName` set to `"ActivitySubmitted"`
+ */
+export const useWatchEventsActivitySubmittedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: eventsAbi,
+    eventName: 'ActivitySubmitted',
+  });
+
+/**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link eventsAbi}__ and `eventName` set to `"Approval"`
  */
 export const useWatchEventsApprovalEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: eventsAbi,
     eventName: 'Approval',
+  });
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link eventsAbi}__ and `eventName` set to `"ChallengeCancelled"`
+ */
+export const useWatchEventsChallengeCancelledEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: eventsAbi,
+    eventName: 'ChallengeCancelled',
   });
 
 /**
@@ -1645,15 +1742,6 @@ export const useWatchEventsChallengeJoinedEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: eventsAbi,
     eventName: 'ChallengeJoined',
-  });
-
-/**
- * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link eventsAbi}__ and `eventName` set to `"ResultSubmitted"`
- */
-export const useWatchEventsResultSubmittedEvent =
-  /*#__PURE__*/ createUseWatchContractEvent({
-    abi: eventsAbi,
-    eventName: 'ResultSubmitted',
   });
 
 /**
@@ -2308,7 +2396,7 @@ export const useWatchOwnableOwnershipTransferredEvent =
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useReadRunJudge = /*#__PURE__*/ createUseReadContract({
   abi: runJudgeAbi,
@@ -2316,9 +2404,21 @@ export const useReadRunJudge = /*#__PURE__*/ createUseReadContract({
 });
 
 /**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"MAX_PARTICIPANTS"`
+ *
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
+ */
+export const useReadRunJudgeMaxParticipants =
+  /*#__PURE__*/ createUseReadContract({
+    abi: runJudgeAbi,
+    address: runJudgeAddress,
+    functionName: 'MAX_PARTICIPANTS',
+  });
+
+/**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"agent"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useReadRunJudgeAgent = /*#__PURE__*/ createUseReadContract({
   abi: runJudgeAbi,
@@ -2327,9 +2427,21 @@ export const useReadRunJudgeAgent = /*#__PURE__*/ createUseReadContract({
 });
 
 /**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"challengeCreators"`
+ *
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
+ */
+export const useReadRunJudgeChallengeCreators =
+  /*#__PURE__*/ createUseReadContract({
+    abi: runJudgeAbi,
+    address: runJudgeAddress,
+    functionName: 'challengeCreators',
+  });
+
+/**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"challengeParticipants"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useReadRunJudgeChallengeParticipants =
   /*#__PURE__*/ createUseReadContract({
@@ -2341,7 +2453,7 @@ export const useReadRunJudgeChallengeParticipants =
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"challenges"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useReadRunJudgeChallenges = /*#__PURE__*/ createUseReadContract({
   abi: runJudgeAbi,
@@ -2352,7 +2464,7 @@ export const useReadRunJudgeChallenges = /*#__PURE__*/ createUseReadContract({
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"nextChallengeId"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useReadRunJudgeNextChallengeId =
   /*#__PURE__*/ createUseReadContract({
@@ -2364,7 +2476,7 @@ export const useReadRunJudgeNextChallengeId =
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"owner"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useReadRunJudgeOwner = /*#__PURE__*/ createUseReadContract({
   abi: runJudgeAbi,
@@ -2375,7 +2487,7 @@ export const useReadRunJudgeOwner = /*#__PURE__*/ createUseReadContract({
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"participants"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useReadRunJudgeParticipants = /*#__PURE__*/ createUseReadContract({
   abi: runJudgeAbi,
@@ -2386,7 +2498,7 @@ export const useReadRunJudgeParticipants = /*#__PURE__*/ createUseReadContract({
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"usdc"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useReadRunJudgeUsdc = /*#__PURE__*/ createUseReadContract({
   abi: runJudgeAbi,
@@ -2397,7 +2509,7 @@ export const useReadRunJudgeUsdc = /*#__PURE__*/ createUseReadContract({
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWriteRunJudge = /*#__PURE__*/ createUseWriteContract({
   abi: runJudgeAbi,
@@ -2405,9 +2517,21 @@ export const useWriteRunJudge = /*#__PURE__*/ createUseWriteContract({
 });
 
 /**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"cancelChallenge"`
+ *
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
+ */
+export const useWriteRunJudgeCancelChallenge =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: runJudgeAbi,
+    address: runJudgeAddress,
+    functionName: 'cancelChallenge',
+  });
+
+/**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"createChallenge"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWriteRunJudgeCreateChallenge =
   /*#__PURE__*/ createUseWriteContract({
@@ -2419,7 +2543,7 @@ export const useWriteRunJudgeCreateChallenge =
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"declareWinner"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWriteRunJudgeDeclareWinner =
   /*#__PURE__*/ createUseWriteContract({
@@ -2431,7 +2555,7 @@ export const useWriteRunJudgeDeclareWinner =
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"joinChallenge"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWriteRunJudgeJoinChallenge =
   /*#__PURE__*/ createUseWriteContract({
@@ -2443,7 +2567,7 @@ export const useWriteRunJudgeJoinChallenge =
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"renounceOwnership"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWriteRunJudgeRenounceOwnership =
   /*#__PURE__*/ createUseWriteContract({
@@ -2455,7 +2579,7 @@ export const useWriteRunJudgeRenounceOwnership =
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"setAgent"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWriteRunJudgeSetAgent = /*#__PURE__*/ createUseWriteContract({
   abi: runJudgeAbi,
@@ -2464,21 +2588,21 @@ export const useWriteRunJudgeSetAgent = /*#__PURE__*/ createUseWriteContract({
 });
 
 /**
- * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"submitResult"`
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"submitActivity"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
-export const useWriteRunJudgeSubmitResult =
+export const useWriteRunJudgeSubmitActivity =
   /*#__PURE__*/ createUseWriteContract({
     abi: runJudgeAbi,
     address: runJudgeAddress,
-    functionName: 'submitResult',
+    functionName: 'submitActivity',
   });
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"transferOwnership"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWriteRunJudgeTransferOwnership =
   /*#__PURE__*/ createUseWriteContract({
@@ -2490,7 +2614,7 @@ export const useWriteRunJudgeTransferOwnership =
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useSimulateRunJudge = /*#__PURE__*/ createUseSimulateContract({
   abi: runJudgeAbi,
@@ -2498,9 +2622,21 @@ export const useSimulateRunJudge = /*#__PURE__*/ createUseSimulateContract({
 });
 
 /**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"cancelChallenge"`
+ *
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
+ */
+export const useSimulateRunJudgeCancelChallenge =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: runJudgeAbi,
+    address: runJudgeAddress,
+    functionName: 'cancelChallenge',
+  });
+
+/**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"createChallenge"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useSimulateRunJudgeCreateChallenge =
   /*#__PURE__*/ createUseSimulateContract({
@@ -2512,7 +2648,7 @@ export const useSimulateRunJudgeCreateChallenge =
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"declareWinner"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useSimulateRunJudgeDeclareWinner =
   /*#__PURE__*/ createUseSimulateContract({
@@ -2524,7 +2660,7 @@ export const useSimulateRunJudgeDeclareWinner =
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"joinChallenge"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useSimulateRunJudgeJoinChallenge =
   /*#__PURE__*/ createUseSimulateContract({
@@ -2536,7 +2672,7 @@ export const useSimulateRunJudgeJoinChallenge =
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"renounceOwnership"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useSimulateRunJudgeRenounceOwnership =
   /*#__PURE__*/ createUseSimulateContract({
@@ -2548,7 +2684,7 @@ export const useSimulateRunJudgeRenounceOwnership =
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"setAgent"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useSimulateRunJudgeSetAgent =
   /*#__PURE__*/ createUseSimulateContract({
@@ -2558,21 +2694,21 @@ export const useSimulateRunJudgeSetAgent =
   });
 
 /**
- * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"submitResult"`
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"submitActivity"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
-export const useSimulateRunJudgeSubmitResult =
+export const useSimulateRunJudgeSubmitActivity =
   /*#__PURE__*/ createUseSimulateContract({
     abi: runJudgeAbi,
     address: runJudgeAddress,
-    functionName: 'submitResult',
+    functionName: 'submitActivity',
   });
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link runJudgeAbi}__ and `functionName` set to `"transferOwnership"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useSimulateRunJudgeTransferOwnership =
   /*#__PURE__*/ createUseSimulateContract({
@@ -2584,7 +2720,7 @@ export const useSimulateRunJudgeTransferOwnership =
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link runJudgeAbi}__
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWatchRunJudgeEvent = /*#__PURE__*/ createUseWatchContractEvent({
   abi: runJudgeAbi,
@@ -2592,9 +2728,33 @@ export const useWatchRunJudgeEvent = /*#__PURE__*/ createUseWatchContractEvent({
 });
 
 /**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link runJudgeAbi}__ and `eventName` set to `"ActivitySubmitted"`
+ *
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
+ */
+export const useWatchRunJudgeActivitySubmittedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: runJudgeAbi,
+    address: runJudgeAddress,
+    eventName: 'ActivitySubmitted',
+  });
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link runJudgeAbi}__ and `eventName` set to `"ChallengeCancelled"`
+ *
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
+ */
+export const useWatchRunJudgeChallengeCancelledEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: runJudgeAbi,
+    address: runJudgeAddress,
+    eventName: 'ChallengeCancelled',
+  });
+
+/**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link runJudgeAbi}__ and `eventName` set to `"ChallengeCreated"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWatchRunJudgeChallengeCreatedEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
@@ -2606,7 +2766,7 @@ export const useWatchRunJudgeChallengeCreatedEvent =
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link runJudgeAbi}__ and `eventName` set to `"ChallengeJoined"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWatchRunJudgeChallengeJoinedEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
@@ -2618,7 +2778,7 @@ export const useWatchRunJudgeChallengeJoinedEvent =
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link runJudgeAbi}__ and `eventName` set to `"OwnershipTransferred"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWatchRunJudgeOwnershipTransferredEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
@@ -2628,21 +2788,9 @@ export const useWatchRunJudgeOwnershipTransferredEvent =
   });
 
 /**
- * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link runJudgeAbi}__ and `eventName` set to `"ResultSubmitted"`
- *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
- */
-export const useWatchRunJudgeResultSubmittedEvent =
-  /*#__PURE__*/ createUseWatchContractEvent({
-    abi: runJudgeAbi,
-    address: runJudgeAddress,
-    eventName: 'ResultSubmitted',
-  });
-
-/**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link runJudgeAbi}__ and `eventName` set to `"WinnerDeclared"`
  *
- * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0xbabeC3dF164f14672c08AA277Af9936532c283Ba)
+ * [__View Contract on Base Sepolia Basescan__](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
  */
 export const useWatchRunJudgeWinnerDeclaredEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
