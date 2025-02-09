@@ -89,9 +89,13 @@ export function JoinChallengeButton({
     if (approveTxHash) {
       if (isApproveSuccess) {
         toast.success('USDC approved successfully', { id: toastId });
-        queryClient.invalidateQueries({
-          queryKey: ['readErc20Allowance'],
-        });
+        // Add delay to allow subgraph to index
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            queryKey: ['readErc20Allowance'],
+          });
+          handleJoin();
+        }, 3000); // Wait 3 seconds for subgraph indexing
         setApproveTxHash(undefined);
       } else if (isApproveError) {
         toast.error('USDC approval failed', { id: toastId });
@@ -104,20 +108,41 @@ export function JoinChallengeButton({
     if (joinTxHash) {
       if (isJoinSuccess) {
         toast.success('Successfully joined challenge!', { id: toastId });
-        queryClient.invalidateQueries({
-          queryKey: ['readErc20BalanceOf'],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['readRunJudgeChallenges'],
-        });
-        router.refresh();
+        // Add delay to allow subgraph to index
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            queryKey: ['readErc20BalanceOf'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['readRunJudgeChallenges'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['userChallenges'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['available-challenges'],
+          });
+          // Invalidate the specific challenge query
+          queryClient.invalidateQueries({
+            queryKey: ['challenge', challengeId],
+          });
+          router.refresh();
+        }, 3000); // Wait 3 seconds for subgraph indexing
         setJoinTxHash(undefined);
       } else if (isJoinError) {
         toast.error('Failed to join challenge', { id: toastId });
         setJoinTxHash(undefined);
       }
     }
-  }, [isJoinSuccess, isJoinError, joinTxHash, queryClient, router, toastId]);
+  }, [
+    isJoinSuccess,
+    isJoinError,
+    joinTxHash,
+    queryClient,
+    router,
+    toastId,
+    challengeId,
+  ]);
 
   const handleJoin = async () => {
     if (!address || !entryFee) return;

@@ -146,25 +146,54 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
     if (submitTxHash) {
       if (isSubmitSuccess) {
         toast.success('Activity submitted successfully!', { id: toastId });
-        queryClient.invalidateQueries({
-          queryKey: ['readRunJudgeChallenges'],
-        });
-        setShowConfirmation(false);
+        // Add delay to allow subgraph to index
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            queryKey: ['readRunJudgeChallenges'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['userChallenges'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['challenge', challengeId],
+          });
+          setShowConfirmation(false);
+        }, 3000); // Wait 3 seconds for subgraph indexing
         setSubmitTxHash(undefined);
       } else if (isSubmitError) {
         toast.error('Failed to submit activity', { id: toastId });
         setSubmitTxHash(undefined);
       }
     }
-  }, [isSubmitSuccess, isSubmitError, submitTxHash, queryClient, toastId]);
+  }, [
+    isSubmitSuccess,
+    isSubmitError,
+    submitTxHash,
+    queryClient,
+    toastId,
+    challengeId,
+  ]);
 
   useEffect(() => {
     if (cancelTxHash) {
       if (isCancelSuccess) {
         toast.success('Challenge cancelled successfully!', { id: toastId });
-        queryClient.invalidateQueries({
-          queryKey: ['readRunJudgeChallenges'],
-        });
+        // Add delay to allow subgraph to index
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            queryKey: ['readRunJudgeChallenges'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['userChallenges'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['available-challenges'],
+          });
+          // Invalidate the specific challenge query
+          queryClient.invalidateQueries({
+            queryKey: ['challenge', challengeId],
+          });
+        }, 3000); // Wait 3 seconds for subgraph indexing
         setShowCancelConfirmation(false);
         setCancelTxHash(undefined);
       } else if (isCancelError) {
@@ -172,7 +201,14 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
         setCancelTxHash(undefined);
       }
     }
-  }, [isCancelSuccess, isCancelError, cancelTxHash, queryClient, toastId]);
+  }, [
+    isCancelSuccess,
+    isCancelError,
+    cancelTxHash,
+    queryClient,
+    toastId,
+    challengeId,
+  ]);
 
   if (!challenge || !contractChallenge) {
     return (

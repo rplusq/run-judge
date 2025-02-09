@@ -151,11 +151,14 @@ export function CreateChallengeForm() {
     if (approveTxHash) {
       if (isApproveSuccess) {
         toast.success('USDC approved successfully', { id: toastId });
-        queryClient.invalidateQueries({
-          queryKey: ['readErc20Allowance'],
-        });
+        // Add delay to allow subgraph to index
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            queryKey: ['readErc20Allowance'],
+          });
+          handleCreateChallenge();
+        }, 3000); // Wait 3 seconds for subgraph indexing
         setApproveTxHash(undefined);
-        handleCreateChallenge();
       } else if (isApproveError) {
         toast.error('USDC approval failed', { id: toastId });
         setApproveTxHash(undefined);
@@ -167,10 +170,19 @@ export function CreateChallengeForm() {
     if (createTxHash) {
       if (isCreateSuccess) {
         toast.success('Challenge created successfully!', { id: toastId });
-        queryClient.invalidateQueries({
-          queryKey: ['readRunJudgeChallenges'],
-        });
-        router.push('/dashboard');
+        // Add delay to allow subgraph to index
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            queryKey: ['readRunJudgeChallenges'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['userChallenges'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['available-challenges'],
+          });
+          router.push('/dashboard');
+        }, 3000); // Wait 3 seconds for subgraph indexing
         setCreateTxHash(undefined);
       } else if (isCreateError) {
         toast.error('Failed to create challenge', { id: toastId });
