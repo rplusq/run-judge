@@ -9,8 +9,8 @@ import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
 import { createWalletClient, http, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { baseSepolia } from 'viem/chains';
 import { runJudgeActionProvider } from './actions';
+import { appConfig } from './config';
 import type {
   ActivityResponse,
   AgentAnalyzeInput,
@@ -45,8 +45,8 @@ export class Agent {
       );
       const walletClient = createWalletClient({
         account: agentAccount,
-        transport: http('https://rpc.ankr.com/base_sepolia'),
-        chain: baseSepolia,
+        transport: http(appConfig.rpcUrl),
+        chain: appConfig.chain,
       });
 
       const walletProvider = new ViemWalletProvider(walletClient);

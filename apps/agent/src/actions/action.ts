@@ -1,6 +1,9 @@
 import { customActionProvider, ViemWalletProvider } from '@coinbase/agentkit';
 import { encodeFunctionData } from 'viem';
+import { base, baseSepolia } from 'viem/chains';
 import { z } from 'zod';
+import { appConfig } from '../config';
+import { AppConfig } from '../types';
 import { runJudgeABI } from './abi';
 import { DeclareWinnerSchema } from './schemas';
 
@@ -23,6 +26,8 @@ export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
     walletProvider: ViemWalletProvider,
     args: z.infer<typeof DeclareWinnerSchema>
   ) => {
+    validateEnvAndChain(walletProvider, appConfig);
+
     // Send transaction to the RunJudge contract to deeclare the winner of the challenge
     const data = encodeFunctionData({
       abi: runJudgeABI,
@@ -45,3 +50,25 @@ export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
     }
   },
 });
+
+// Simply validates env and network before sending a transaction
+const validateEnvAndChain = (
+  walletProvider: ViemWalletProvider,
+  appConfig: AppConfig
+) => {
+  const network = walletProvider.getNetwork();
+
+  if (
+    appConfig.environment === 'production' &&
+    network.chainId !== base.id.toString()
+  ) {
+    throw new Error('Invalid chain ID for env production');
+  }
+
+  if (
+    appConfig.environment === 'development' &&
+    network.chainId !== baseSepolia.id.toString()
+  ) {
+    throw new Error('Invalid chain ID for env development');
+  }
+};

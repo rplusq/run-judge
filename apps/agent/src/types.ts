@@ -1,4 +1,5 @@
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
+import { defineChain } from 'viem';
 import { z } from 'zod';
 
 export type AgentConfig = {
@@ -33,3 +34,9 @@ export const agentAnalyzeRequestSchema = z.object({
 });
 
 export type AgentAnalyzeRequest = z.infer<typeof agentAnalyzeRequestSchema>;
+
+export type AppConfig = {
+  chain: ReturnType<typeof defineChain>;
+  rpcUrl: string;
+  environment: 'development' | 'production';
+};
