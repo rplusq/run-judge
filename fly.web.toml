@@ -18,5 +18,5 @@ cpu_kind = 'shared'
 cpus = 1
 
 [env]
-NEXT_PUBLIC_AGENT_SERVICE_URL = "http://runjudge-agent.internal"
+NEXT_PUBLIC_AGENT_SERVICE_URL = "http://runjudge-agent.internal:3000"
 NEXT_PUBLIC_ONCHAINKIT_API_KEY = "pjhJrIKjK8njKklobMGLzQEXaHyvMxFQ"
