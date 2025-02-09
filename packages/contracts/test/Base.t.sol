@@ -33,6 +33,7 @@ abstract contract Base_Test is Test, Events {
         address payable alice;
         address payable bob;
         address payable carol;
+        address payable charlie;
         address payable attacker;
     }
 
@@ -48,6 +49,7 @@ abstract contract Base_Test is Test, Events {
             alice: createUser("Alice"),
             bob: createUser("Bob"),
             carol: createUser("Carol"),
+            charlie: createUser("Charlie"),
             attacker: createUser("Attacker")
         });
 
@@ -59,11 +61,11 @@ abstract contract Base_Test is Test, Events {
         runJudge = new RunJudge(address(usdc), users.agent);
         vm.stopPrank();
 
-        // Mint initial USDC to users
-        mintUsdc(users.alice);
-        mintUsdc(users.bob);
-        mintUsdc(users.carol);
-        mintUsdc(users.attacker);
+        // Mint initial USDC to users and approve RunJudge
+        mintUsdcAndApprove(users.alice);
+        mintUsdcAndApprove(users.bob);
+        mintUsdcAndApprove(users.carol);
+
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -78,8 +80,10 @@ abstract contract Base_Test is Test, Events {
         return user;
     }
 
-    /// @dev Mints initial USDC balance to a user
-    function mintUsdc(address user) internal {
+    /// @dev Mints initial USDC balance to a user and approves RunJudge to spend it
+    function mintUsdcAndApprove(address user) internal {
         usdc.mint(user, INITIAL_BALANCE);
+        vm.prank(user);
+        usdc.approve(address(runJudge), type(uint256).max);
     }
 }

@@ -24,8 +24,10 @@ dataSources:
           handler: handleChallengeCreated
         - event: ChallengeJoined(indexed uint256,indexed address)
           handler: handleChallengeJoined
-        - event: ResultSubmitted(indexed uint256,indexed address,uint256)
-          handler: handleResultSubmitted
+        - event: ActivitySubmitted(indexed uint256,indexed address,uint256)
+          handler: handleActivitySubmitted
         - event: WinnerDeclared(indexed uint256,indexed uint256,address,uint256)
           handler: handleWinnerDeclared
+        - event: ChallengeCancelled(indexed uint256,indexed address,uint256)
+          handler: handleChallengeCancelled
       file: ./src/run-judge.ts

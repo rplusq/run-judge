@@ -14,6 +14,7 @@ export type Challenge = {
   distance: string;
   entryFee: string;
   isActive: boolean;
+  isCancelled: boolean;
   winner: string | null;
   totalPrize: string;
   participants: {
@@ -21,6 +22,7 @@ export type Challenge = {
     hasSubmitted: boolean;
     stravaActivityId: string | null;
   }[];
+  cancelledAt: string | null;
 };
 
 export type UserChallenge = {
@@ -30,6 +32,7 @@ export type UserChallenge = {
     distance: string;
     entryFee: string;
     isActive: boolean;
+    isCancelled: boolean;
     winner: string | null;
     totalPrize: string;
     participants: {
@@ -37,6 +40,7 @@ export type UserChallenge = {
       hasSubmitted: boolean;
       stravaActivityId: string | null;
     }[];
+    cancelledAt: string | null;
   };
   hasSubmitted: boolean;
   stravaActivityId: string | null;
@@ -50,8 +54,10 @@ export const GET_CHALLENGE = `
       distance
       entryFee
       isActive
+      isCancelled
       winner
       totalPrize
+      cancelledAt
       participants {
         address
         hasSubmitted
@@ -70,7 +76,9 @@ export const GET_USER_CHALLENGES = `
         distance
         entryFee
         isActive
+        isCancelled
         winner
+        cancelledAt
         participants {
           hasSubmitted
           stravaActivityId

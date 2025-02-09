@@ -1,11 +1,15 @@
 submitResult.t.sol
 # when participant has not joined
-## it should revert
+## it should revert with NotJoined
 # when participant has already submitted
-## it should revert
+## it should revert with AlreadySubmitted
 # when challenge has not started
-## it should revert
+## it should revert with ChallengeNotStarted
+# when challenge is not active
+## it should revert with ChallengeNotActive
+# when strava activity id is zero
+## it should revert with InvalidActivityId
 # when all conditions are met
 ## it should mark participant as submitted
-## it should store the strava URL
-## it should emit a {ResultSubmitted} event 
+## it should store the strava activity id
+## it should emit a {ActivitySubmitted} event 

@@ -10,6 +10,58 @@ import {
   BigInt,
 } from "@graphprotocol/graph-ts";
 
+export class ActivitySubmitted extends ethereum.Event {
+  get params(): ActivitySubmitted__Params {
+    return new ActivitySubmitted__Params(this);
+  }
+}
+
+export class ActivitySubmitted__Params {
+  _event: ActivitySubmitted;
+
+  constructor(event: ActivitySubmitted) {
+    this._event = event;
+  }
+
+  get challengeId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get participant(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get stravaActivityId(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class ChallengeCancelled extends ethereum.Event {
+  get params(): ChallengeCancelled__Params {
+    return new ChallengeCancelled__Params(this);
+  }
+}
+
+export class ChallengeCancelled__Params {
+  _event: ChallengeCancelled;
+
+  constructor(event: ChallengeCancelled) {
+    this._event = event;
+  }
+
+  get challengeId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get creator(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get refundAmount(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
 export class ChallengeCreated extends ethereum.Event {
   get params(): ChallengeCreated__Params {
     return new ChallengeCreated__Params(this);
@@ -84,32 +136,6 @@ export class OwnershipTransferred__Params {
   }
 }
 
-export class ResultSubmitted extends ethereum.Event {
-  get params(): ResultSubmitted__Params {
-    return new ResultSubmitted__Params(this);
-  }
-}
-
-export class ResultSubmitted__Params {
-  _event: ResultSubmitted;
-
-  constructor(event: ResultSubmitted) {
-    this._event = event;
-  }
-
-  get challengeId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get participant(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get stravaActivityId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-}
-
 export class WinnerDeclared extends ethereum.Event {
   get params(): WinnerDeclared__Params {
     return new WinnerDeclared__Params(this);
@@ -147,6 +173,7 @@ export class RunJudge__challengesResult {
   value3: boolean;
   value4: Address;
   value5: BigInt;
+  value6: i32;
 
   constructor(
     value0: BigInt,
@@ -155,6 +182,7 @@ export class RunJudge__challengesResult {
     value3: boolean,
     value4: Address,
     value5: BigInt,
+    value6: i32,
   ) {
     this.value0 = value0;
     this.value1 = value1;
@@ -162,6 +190,7 @@ export class RunJudge__challengesResult {
     this.value3 = value3;
     this.value4 = value4;
     this.value5 = value5;
+    this.value6 = value6;
   }
 
   toMap(): TypedMap<string, ethereum.Value> {
@@ -172,6 +201,10 @@ export class RunJudge__challengesResult {
     map.set("value3", ethereum.Value.fromBoolean(this.value3));
     map.set("value4", ethereum.Value.fromAddress(this.value4));
     map.set("value5", ethereum.Value.fromUnsignedBigInt(this.value5));
+    map.set(
+      "value6",
+      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(this.value6)),
+    );
     return map;
   }
 
@@ -197,6 +230,10 @@ export class RunJudge__challengesResult {
 
   getTotalPrize(): BigInt {
     return this.value5;
+  }
+
+  getParticipantCount(): i32 {
+    return this.value6;
   }
 }
 
@@ -237,6 +274,29 @@ export class RunJudge extends ethereum.SmartContract {
     return new RunJudge("RunJudge", address);
   }
 
+  MAX_PARTICIPANTS(): i32 {
+    let result = super.call(
+      "MAX_PARTICIPANTS",
+      "MAX_PARTICIPANTS():(uint8)",
+      [],
+    );
+
+    return result[0].toI32();
+  }
+
+  try_MAX_PARTICIPANTS(): ethereum.CallResult<i32> {
+    let result = super.tryCall(
+      "MAX_PARTICIPANTS",
+      "MAX_PARTICIPANTS():(uint8)",
+      [],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toI32());
+  }
+
   agent(): Address {
     let result = super.call("agent", "agent():(address)", []);
 
@@ -245,6 +305,29 @@ export class RunJudge extends ethereum.SmartContract {
 
   try_agent(): ethereum.CallResult<Address> {
     let result = super.tryCall("agent", "agent():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  challengeCreators(challengeId: BigInt): Address {
+    let result = super.call(
+      "challengeCreators",
+      "challengeCreators(uint256):(address)",
+      [ethereum.Value.fromUnsignedBigInt(challengeId)],
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_challengeCreators(challengeId: BigInt): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "challengeCreators",
+      "challengeCreators(uint256):(address)",
+      [ethereum.Value.fromUnsignedBigInt(challengeId)],
+    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -287,7 +370,7 @@ export class RunJudge extends ethereum.SmartContract {
   challenges(challengeId: BigInt): RunJudge__challengesResult {
     let result = super.call(
       "challenges",
-      "challenges(uint256):(uint40,uint32,uint256,bool,address,uint256)",
+      "challenges(uint256):(uint40,uint32,uint256,bool,address,uint256,uint8)",
       [ethereum.Value.fromUnsignedBigInt(challengeId)],
     );
 
@@ -298,6 +381,7 @@ export class RunJudge extends ethereum.SmartContract {
       result[3].toBoolean(),
       result[4].toAddress(),
       result[5].toBigInt(),
+      result[6].toI32(),
     );
   }
 
@@ -306,7 +390,7 @@ export class RunJudge extends ethereum.SmartContract {
   ): ethereum.CallResult<RunJudge__challengesResult> {
     let result = super.tryCall(
       "challenges",
-      "challenges(uint256):(uint40,uint32,uint256,bool,address,uint256)",
+      "challenges(uint256):(uint40,uint32,uint256,bool,address,uint256,uint8)",
       [ethereum.Value.fromUnsignedBigInt(challengeId)],
     );
     if (result.reverted) {
@@ -321,6 +405,7 @@ export class RunJudge extends ethereum.SmartContract {
         value[3].toBoolean(),
         value[4].toAddress(),
         value[5].toBigInt(),
+        value[6].toI32(),
       ),
     );
   }
@@ -497,6 +582,36 @@ export class ConstructorCall__Outputs {
   }
 }
 
+export class CancelChallengeCall extends ethereum.Call {
+  get inputs(): CancelChallengeCall__Inputs {
+    return new CancelChallengeCall__Inputs(this);
+  }
+
+  get outputs(): CancelChallengeCall__Outputs {
+    return new CancelChallengeCall__Outputs(this);
+  }
+}
+
+export class CancelChallengeCall__Inputs {
+  _call: CancelChallengeCall;
+
+  constructor(call: CancelChallengeCall) {
+    this._call = call;
+  }
+
+  get challengeId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class CancelChallengeCall__Outputs {
+  _call: CancelChallengeCall;
+
+  constructor(call: CancelChallengeCall) {
+    this._call = call;
+  }
+}
+
 export class CreateChallengeCall extends ethereum.Call {
   get inputs(): CreateChallengeCall__Inputs {
     return new CreateChallengeCall__Inputs(this);
@@ -659,20 +774,20 @@ export class SetAgentCall__Outputs {
   }
 }
 
-export class SubmitResultCall extends ethereum.Call {
-  get inputs(): SubmitResultCall__Inputs {
-    return new SubmitResultCall__Inputs(this);
+export class SubmitActivityCall extends ethereum.Call {
+  get inputs(): SubmitActivityCall__Inputs {
+    return new SubmitActivityCall__Inputs(this);
   }
 
-  get outputs(): SubmitResultCall__Outputs {
-    return new SubmitResultCall__Outputs(this);
+  get outputs(): SubmitActivityCall__Outputs {
+    return new SubmitActivityCall__Outputs(this);
   }
 }
 
-export class SubmitResultCall__Inputs {
-  _call: SubmitResultCall;
+export class SubmitActivityCall__Inputs {
+  _call: SubmitActivityCall;
 
-  constructor(call: SubmitResultCall) {
+  constructor(call: SubmitActivityCall) {
     this._call = call;
   }
 
@@ -685,10 +800,10 @@ export class SubmitResultCall__Inputs {
   }
 }
 
-export class SubmitResultCall__Outputs {
-  _call: SubmitResultCall;
+export class SubmitActivityCall__Outputs {
+  _call: SubmitActivityCall;
 
-  constructor(call: SubmitResultCall) {
+  constructor(call: SubmitActivityCall) {
     this._call = call;
   }
 }
