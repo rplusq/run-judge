@@ -42,19 +42,21 @@ export class Agent {
         },
       });
 
-      const walletProviderCfg: CdpWalletProviderConfig = {
+      const walletProviderCfg: CdpWalletProviderConfig & {
+        mnemonicPhrase: string;
+        networkId: string;
+      } = {
         apiKeyName: appConfig.cdp.apiKeyName,
         apiKeyPrivateKey: appConfig.cdp.apiKeyPrivateKey,
-        network: appConfig.chain,
+        mnemonicPhrase: appConfig.cdp.mnemonicPhrase,
+        networkId:
+          appConfig.environment === 'production'
+            ? 'base-mainnet'
+            : 'base-sepolia',
       };
 
       const walletProvider =
         await CdpWalletProvider.configureWithWallet(walletProviderCfg);
-
-      console.debug(
-        '🔑 Wallet provider configured for address ',
-        walletProvider.getAddress()
-      );
 
       // const walletProvider = new ViemWalletProvider(walletClient);
       const agentKit = await AgentKit.from({
