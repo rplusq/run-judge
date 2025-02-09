@@ -2,7 +2,7 @@ import { base, baseSepolia } from 'viem/chains';
 import { AppConfig } from './types';
 
 // we would not normally load the env like this but this helps us
-// typecheck it
+// typecheck it and it's faster
 const environment: 'development' | 'production' =
   process.env.ENVIRONMENT === 'production' ? 'production' : 'development';
 
