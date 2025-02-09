@@ -5,6 +5,7 @@ import { cors } from 'hono/cors';
 import { Agent } from './agent';
 import { capturePageWithCookies } from './browser';
 import { compressScreenshot } from './compressScreenshot';
+import { loadAppConfig } from './config';
 import {
   ActivityResponse,
   AgentAnalyzeInput,
@@ -20,7 +21,7 @@ const agent = new Agent();
 const STRAVA_URL = 'https://www.strava.com/activities';
 
 // Initialize agent
-agent.initialize().catch((error) => {
+agent.initialize(loadAppConfig()).catch((error) => {
   console.error('Failed to initialize agent:', error);
   process.exit(1);
 });

@@ -1,5 +1,5 @@
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { Address, defineChain } from 'viem';
+import { Address, Chain, Hex } from 'viem';
 import { z } from 'zod';
 
 export type AgentConfig = {
@@ -36,8 +36,13 @@ export const agentAnalyzeRequestSchema = z.object({
 export type AgentAnalyzeRequest = z.infer<typeof agentAnalyzeRequestSchema>;
 
 export type AppConfig = {
-  chain: ReturnType<typeof defineChain>;
+  chain: Chain;
   rpcUrl: string;
   environment: 'development' | 'production';
   contractAddress: Address;
+  cdp: {
+    apiKeyName: string;
+    apiKeyPrivateKey: Hex;
+    mnemonicPhrase: string;
+  };
 };
