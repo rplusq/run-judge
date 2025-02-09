@@ -2,10 +2,12 @@ import { customActionProvider, ViemWalletProvider } from '@coinbase/agentkit';
 import { encodeFunctionData } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import { z } from 'zod';
-import { appConfig } from '../config';
+import { loadAppConfig } from '../config';
 import { AppConfig } from '../types';
 import { runJudgeABI } from './abi';
 import { DeclareWinnerSchema } from './schemas';
+
+const appConfig = loadAppConfig();
 
 export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
   name: 'declare_winner',

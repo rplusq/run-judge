@@ -10,13 +10,15 @@ import { ChatOpenAI } from '@langchain/openai';
 import { createWalletClient, http, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { runJudgeActionProvider } from './actions';
-import { appConfig } from './config';
+import { loadAppConfig } from './config';
 import type {
   ActivityResponse,
   AgentAnalyzeInput,
   AgentConfig,
   Agent as AgentType,
 } from './types';
+
+const appConfig = loadAppConfig();
 
 export class Agent {
   private agent: AgentType | null;

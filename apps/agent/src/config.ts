@@ -6,7 +6,7 @@ import { AppConfig } from './types';
 const environment: 'development' | 'production' =
   process.env.ENVIRONMENT === 'production' ? 'production' : 'development';
 
-export const appConfig: AppConfig = {
+export const loadAppConfig: () => AppConfig = () => ({
   environment,
   contractAddress:
     environment === 'production'
@@ -17,4 +17,4 @@ export const appConfig: AppConfig = {
     environment === 'production'
       ? 'https://rpc.ankr.com/base'
       : 'https://rpc.ankr.com/base_sepolia',
-};
+});
