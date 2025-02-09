@@ -44,22 +44,26 @@ RUN apk add --no-cache \
   ca-certificates \
   ttf-freefont \
   nodejs \
-  yarn
+  yarn \
+  dbus \
+  fontconfig
 
-# Create browser folders and set permissions
-RUN mkdir -p /home/node/.cache/ms-playwright && \
-  chown -R node:node /home/node/.cache
+# Copy built app and setup permissions
+COPY --from=deps /app .
+RUN mkdir -p /home/node/.cache/ms-playwright /dev/shm && \
+  chown -R node:node /home/node /dev/shm && \
+  chmod -R 777 /home/node/.cache /dev/shm
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+  PLAYWRIGHT_BROWSERS_PATH=/usr/lib/chromium \
+  CHROME_PATH=/usr/bin/chromium-browser \
+  NODE_OPTIONS="--max-old-space-size=768"
 
 EXPOSE 3000
 
-# Set the correct permissions
+# Switch to non-root user
 USER node
-
-COPY --from=deps /app .
-
-RUN cd apps/agent && npx playwright install
 
 # Start the application
 CMD ["node", "apps/agent/dist/index.js"]
