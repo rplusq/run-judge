@@ -1,14 +1,17 @@
 import Link from 'next/link';
-import { WalletButton } from '@/components/wallet-button';
+import { NavLinks } from '@/components/nav-links';
 
 export function Header() {
   return (
-    <header className="border-b">
-      <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="font-bold">
-          RunJudge
+    <header className="border-b bg-gradient-to-b from-background to-muted/20">
+      <div className="container flex h-14 items-center justify-between">
+        <Link
+          href="/"
+          className="font-semibold tracking-tight hover:text-primary transition-colors flex items-center gap-1.5"
+        >
+          RunJudge <span className="text-sm">🏃‍♂️</span>
         </Link>
-        <WalletButton />
+        <NavLinks />
       </div>
     </header>
   );

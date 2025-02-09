@@ -1,54 +1,74 @@
-import { Calendar, Flag, Trophy } from 'lucide-react';
+import { Flag, Wallet, Medal } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const steps = [
   {
-    name: 'Pick a date & distance',
-    description:
-      'Choose when you want to run and how far. We recommend weekends for maximum participation!',
-    icon: Calendar,
+    name: 'Create a Challenge',
+    description: 'Pick a distance and date. Entry fee goes to the winner',
+    icon: Wallet,
+    accent: 'from-primary/5 to-transparent border-primary/10',
   },
   {
-    name: 'Everyone runs together',
-    description:
-      'All participants run at the same time, making it a true competition.',
+    name: 'Share with Friends',
+    description: 'Send them the link and they can join instantly',
     icon: Flag,
+    accent: 'from-primary/5 to-transparent border-primary/10',
   },
   {
-    name: 'AI verifies the winner',
+    name: 'Run & Win',
     description:
-      'Our AI judge checks Strava activities to ensure fair play and declares the winner.',
-    icon: Trophy,
+      'Complete your run on Strava and our AI verifies the winner ✨',
+    icon: Medal,
+    accent: 'from-primary/5 to-transparent border-primary/10',
   },
 ];
 
 export function HowItWorks() {
   return (
-    <div className="py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl lg:text-center">
-          <h2 className="text-base font-semibold leading-7">How it works</h2>
-          <p className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            Three simple steps to start running
-          </p>
-          <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            No complicated setup, no crypto knowledge required. Just create a
-            challenge and start running!
+    <div className="py-8 sm:py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            How it Works
+          </h2>
+          <p className="mt-3 text-lg text-muted-foreground">
+            Three simple steps to start running with friends 🏃‍♂️
           </p>
         </div>
-        <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+
+        <div className="mx-auto mt-6 sm:mt-8 max-w-5xl">
+          <dl className="grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-3">
             {steps.map((step) => (
-              <div key={step.name} className="flex flex-col">
-                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7">
-                  <step.icon className="h-5 w-5 flex-none" aria-hidden="true" />
-                  {step.name}
+              <div
+                key={step.name}
+                className={cn(
+                  'relative rounded-lg border bg-gradient-to-b p-6 text-center transition-all hover:scale-[1.01]',
+                  step.accent
+                )}
+              >
+                <dt className="flex flex-col items-center gap-3">
+                  <div className="rounded-full bg-primary/10 p-2.5 ring-1 ring-primary/20">
+                    <step.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-base font-semibold">{step.name}</div>
                 </dt>
-                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-muted-foreground">
-                  <p className="flex-auto">{step.description}</p>
+                <dd className="mt-1.5 text-sm text-muted-foreground">
+                  {step.description}
                 </dd>
               </div>
             ))}
           </dl>
+
+          <div className="mt-8 sm:mt-10 flex justify-center lg:hidden">
+            <Button asChild size="lg">
+              <Link href="/create" className="flex items-center gap-2">
+                Create Challenge
+                <span className="text-sm">🎯</span>
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

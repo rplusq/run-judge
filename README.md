@@ -1,82 +1,102 @@
-# Turborepo starter
+# RunJudge 🏃‍♂️
 
-This Turborepo starter is maintained by the Turborepo core team.
+An AI-powered judge for social fitness challenges that verifies Strava runs while funds are staked. Think of it as a decentralized fitness escrow with a sassy personality that won't let you get away with taking the bus. 🏃‍♂️🚌
 
-## Using this example
+[Live Demo](https://runjudge-web.fly.dev/)
 
-Run the following command:
+## What is RunJudge?
 
-```sh
-npx create-turbo@latest
-```
+Running challenges with friends should be fun, fair, and rewarding. RunJudge makes it happen by combining Strava activities, AI verification, and USDC prizes on Base.
 
-## What's inside?
+Create a challenge, set a distance and prize pool in USDC, and let our AI judge analyze Strava activities to determine the winner - all without needing any crypto knowledge!
 
-This Turborepo includes the following packages/apps:
+## Key Features
 
-### Apps and Packages
+- 🤖 AI-powered verification of Strava activities
+- 💰 USDC prize pools on Base
+- ❤️ Heart rate data verification
+- 🏃 Pace analysis and normalization
+- 🔐 Gasless transactions via Base Paymaster
+- 🌐 No crypto knowledge required!
 
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+## Repository Structure
 
 ```
-cd my-turborepo
-pnpm build
+apps/
+  ├── web/               # Next.js frontend application
+  ├── agent/            # AI verification service using Coinbase Agent Kit
+  └── subgraph/         # The Graph indexing service
+packages/
+  ├── contracts/        # Solidity smart contracts
+  └── shared/           # Shared TypeScript utilities
 ```
 
-### Develop
+## Smart Contract Deployments (Base Sepolia)
 
-To develop all apps and packages, run the following command:
+- RunJudge: [`0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0`](https://sepolia.basescan.org/address/0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0)
+- USDC: [`0x036CbD53842c5426634e7929541eC2318f3dCF7e`](https://sepolia.basescan.org/address/0x036CbD53842c5426634e7929541eC2318f3dCF7e)
 
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm
+- Strava account
+- Base Sepolia USDC (get test tokens from [Circle Faucet](https://faucet.circle.com/))
+
+### Development
+
+1. Install dependencies:
+
+```bash
+pnpm install
 ```
-cd my-turborepo
+
+2. Start the development server:
+
+```bash
 pnpm dev
 ```
 
-### Remote Caching
+## Technical Stack
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+### Smart Contracts
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+- Solidity smart contracts on Base
+- Challenge creation with USDC staking
+- Participant management
+- Automated prize distribution
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+### AI Verification (Coinbase Agent Kit)
 
-```
-cd my-turborepo
-npx turbo login
-```
+- LangChain with Gemini Pro
+- Heart rate data verification
+- Pace normalization
+- Automated winner declaration
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Frontend
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+- Next.js 15 with App Router
+- Coinbase OnchainKit
+- Viem/Wagmi
+- shadcn/ui + Tailwind CSS
 
-```
-npx turbo link
-```
+### Backend & Data
 
-## Useful Links
+- The Graph for challenge indexing
+- Lifetime earnings tracking
+- Challenge discovery
+- Participant statistics
 
-Learn more about the power of Turborepo:
+## Contributing
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+We welcome contributions! Please check our issues page or submit a pull request.
+
+## License
+
+MIT
+
+---
+
+Built with ❤️ by [aguxez](https://github.com/aguxez) and [rplusq](https://github.com/rplusq) for [ETHGlobal Agentic Ethereum 2025](https://ethglobal.com/events/agents)

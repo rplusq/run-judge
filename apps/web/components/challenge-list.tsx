@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select';
 import { WalletConnect } from '@/components/wallet-connect';
 import { useWriteRunJudgeCancelChallenge } from '@/lib/wagmi/generated';
-import { Trophy, Timer, Ban, Users } from 'lucide-react';
+import { Trophy, Timer, Ban } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { formatUnits } from 'viem';
+import { useState, useEffect } from 'react';
+import { formatUnits, type Hash } from 'viem';
 import {
   Card,
   CardContent,
@@ -30,6 +30,7 @@ import { useAccount } from 'wagmi';
 import {
   useReadRunJudgeChallenges as useContractChallenge,
   useWriteRunJudgeSubmitActivity,
+  useSimulateRunJudgeSubmitActivity,
 } from '@/lib/wagmi/generated';
 import {
   Trophy,
@@ -47,6 +48,11 @@ import {
   Share2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CompactIdentity, WinnerIdentity } from '@/components/identity-display';
+import { useQueryClient } from '@tanstack/react-query';
+import { useWaitForTransactionReceipt } from 'wagmi';
+import { toast } from 'sonner';
+import { baseSepolia } from 'viem/chains';
 
 interface ChallengeDetailsProps {
   challengeId: string;
@@ -90,6 +96,7 @@ const getStatusConfig = (challenge: {
 
 export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   const { address } = useAccount();
+  const queryClient = useQueryClient();
   const { data: challenge } = useSubgraphChallenge(challengeId);
   const { data: contractChallenge } = useContractChallenge({
     args: [BigInt(challengeId)],
@@ -101,6 +108,38 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isShared, setIsShared] = useState(false);
+  const [submitTxHash, setSubmitTxHash] = useState<Hash>();
+  const [toastId, setToastId] = useState<string>();
+
+  // Add simulation hook
+  const { data: submitSimulation } = useSimulateRunJudgeSubmitActivity({
+    args: [BigInt(challengeId), BigInt(stravaActivityId || '0')],
+    chainId: baseSepolia.id,
+  });
+
+  // Transaction receipt hook
+  const { isSuccess: isSubmitSuccess, isError: isSubmitError } =
+    useWaitForTransactionReceipt({
+      hash: submitTxHash,
+      chainId: baseSepolia.id,
+    });
+
+  // Handle transaction states
+  useEffect(() => {
+    if (submitTxHash) {
+      if (isSubmitSuccess) {
+        toast.success('Activity submitted successfully!', { id: toastId });
+        queryClient.invalidateQueries({
+          queryKey: ['readRunJudgeChallenges'],
+        });
+        setShowConfirmation(false);
+        setSubmitTxHash(undefined);
+      } else if (isSubmitError) {
+        toast.error('Failed to submit activity', { id: toastId });
+        setSubmitTxHash(undefined);
+      }
+    }
+  }, [isSubmitSuccess, isSubmitError, submitTxHash, queryClient, toastId]);
 
   if (!challenge || !contractChallenge) {
     return (
@@ -121,7 +160,8 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   const startTime = new Date(parseInt(challenge.startTime) * 1000);
   const distanceKm = parseInt(challenge.distance) / 1000;
   const entryFeeUSD = parseFloat(formatUnits(BigInt(challenge.entryFee), 6));
-  const hasStarted = Date.now() > startTime.getTime();
+  const hasStarted =
+    Math.floor(Date.now() / 1000) >= parseInt(challenge.startTime);
   const userParticipant = challenge.participants.find(
     (p) => p.participant.toLowerCase() === address?.toLowerCase()
   );
@@ -161,12 +201,25 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
     if (!activityId) return;
 
     try {
-      await submitResult({
+      // Simulate submission first
+      if (!submitSimulation?.request) {
+        toast.error('Failed to simulate activity submission');
+        return;
+      }
+
+      const txHash = await submitResult({
         args: [BigInt(challengeId), BigInt(activityId)],
+        chainId: baseSepolia.id,
       });
-      setShowConfirmation(false);
+
+      const id = toast.loading('Submitting activity...').toString();
+      setToastId(id);
+      setSubmitTxHash(txHash as Hash);
     } catch (error) {
       console.error('Failed to submit result:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to submit activity'
+      );
       setError('Failed to submit activity. Please try again.');
     }
   };
@@ -190,7 +243,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
             Connect your wallet to interact with this challenge
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex justify-center">
+        <CardContent className="flex flex-col items-center gap-4">
           <WalletButton />
         </CardContent>
       </Card>
@@ -282,64 +335,69 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Participants</h3>
             <div className="space-y-3">
-              {challenge.participants.map((participant) => (
-                <div
-                  key={participant.participant}
-                  className="flex items-center justify-between p-3 rounded-lg border"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="font-mono text-sm">
-                      {participant.participant.slice(0, 6)}...
-                      {participant.participant.slice(-4)}
+              {challenge.participants.map((participant) => {
+                return (
+                  <div
+                    key={participant.participant}
+                    className="flex items-center justify-between p-3 rounded-lg border"
+                  >
+                    <div className="flex items-center gap-3">
+                      <CompactIdentity
+                        address={participant.participant as `0x${string}`}
+                      />
+                      {participant.participant.toLowerCase() ===
+                        address?.toLowerCase() && (
+                        <Badge variant="secondary" className="text-xs">
+                          You
+                        </Badge>
+                      )}
                     </div>
-                    {participant.participant.toLowerCase() ===
-                      address.toLowerCase() && (
-                      <Badge variant="secondary" className="text-xs">
-                        You
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {participant.hasSubmitted ? (
+                        <Badge variant="secondary" className="gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Submitted
+                        </Badge>
+                      ) : hasStarted ? (
+                        <Badge variant="outline" className="gap-1">
+                          <Clock className="h-3 w-3" />
+                          Pending
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="gap-1">
+                          <Timer className="h-3 w-3" />
+                          Not Started
+                        </Badge>
+                      )}
+                      {participant.stravaActivityId && (
+                        <a
+                          href={`https://www.strava.com/activities/${participant.stravaActivityId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <ArrowUpRight className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {participant.hasSubmitted ? (
-                      <Badge variant="secondary" className="gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Submitted
-                      </Badge>
-                    ) : hasStarted ? (
-                      <Badge variant="outline" className="gap-1">
-                        <Clock className="h-3 w-3" />
-                        Pending
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="gap-1">
-                        <Timer className="h-3 w-3" />
-                        Not Started
-                      </Badge>
-                    )}
-                    {participant.stravaActivityId && (
-                      <a
-                        href={`https://www.strava.com/activities/${participant.stravaActivityId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-primary"
-                      >
-                        <ArrowUpRight className="h-4 w-4" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* Action Section */}
           <div className="space-y-4">
-            {!userParticipant && !hasStarted && (
-              <JoinChallengeButton
-                challengeId={challengeId}
-                entryFee={challenge.entryFee}
-              />
-            )}
+            {!userParticipant &&
+              challenge.isActive &&
+              !hasStarted &&
+              !challenge.isCancelled &&
+              challenge.participants.length < 2 && (
+                <JoinChallengeButton
+                  challengeId={challengeId}
+                  entryFee={formatUnits(BigInt(challenge.entryFee), 6)}
+                />
+              )}
 
             {userParticipant && !userParticipant.hasSubmitted && hasStarted && (
               <div className="space-y-4">
@@ -393,9 +451,13 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
             <div className="text-center p-6 rounded-lg bg-green-500/10 space-y-2">
               <Crown className="h-6 w-6 text-yellow-500 mx-auto" />
               <div className="font-semibold">Winner</div>
-              <div className="font-mono text-sm">
-                {challenge.winner.slice(0, 6)}...{challenge.winner.slice(-4)}
-              </div>
+
+              <WinnerIdentity
+                address={challenge.winner as `0x${string}`}
+                prize={parseFloat(
+                  formatUnits(BigInt(challenge.totalPrize), 6)
+                ).toString()}
+              />
             </div>
           )}
         </CardContent>

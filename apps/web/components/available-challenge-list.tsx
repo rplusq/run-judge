@@ -8,7 +8,6 @@ import {
   Challenge,
 } from '@/lib/graphql';
 import { ChallengeCard } from '@/components/challenge-card';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -24,17 +23,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { WalletConnect } from '@/components/wallet-connect';
-import { Trophy, Timer, Users } from 'lucide-react';
+import { Timer, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 type ChallengesResponse = {
   challenges: Challenge[];
-};
-
-const getStatusLabel = (startTime: string) => {
-  return new Date(parseInt(startTime) * 1000) > new Date()
-    ? { label: 'Open to Join', color: 'text-primary', Icon: Timer }
-    : { label: 'In Progress', color: 'text-yellow-500', Icon: Timer };
 };
 
 export function AvailableChallengeList() {
