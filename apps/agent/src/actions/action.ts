@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { runJudgeABI } from './abi';
 import { DeclareWinnerSchema } from './schemas';
 
-const RUN_JUDGE_ADDRESS = '0xbabeC3dF164f14672c08AA277Af9936532c283Ba';
+const RUN_JUDGE_ADDRESS = '0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0';
 
 export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
   name: 'declare_winner',
