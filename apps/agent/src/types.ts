@@ -31,6 +31,7 @@ export const agentAnalyzeRequestSchema = z.object({
   challengeId: z.number().describe('The ID of the challenge'),
   // For now we have capable of analyzing two activities only
   activityIds: z.array(z.number()).length(2),
+  challengeDistance: z.number().describe('The distance of the challenge'),
 });
 
 export type AgentAnalyzeRequest = z.infer<typeof agentAnalyzeRequestSchema>;

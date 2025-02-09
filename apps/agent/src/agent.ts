@@ -80,7 +80,10 @@ export class Agent {
     }
   }
 
-  async analyze(inputs: AgentAnalyzeInput[]): Promise<string> {
+  async analyze(
+    inputs: AgentAnalyzeInput[],
+    challengeDistance: number
+  ): Promise<string> {
     if (!this.agent) {
       throw new Error('Agent not initialized');
     }
@@ -101,49 +104,48 @@ export class Agent {
     const messageContent: MessageContentComplex[] = [
       {
         type: 'text',
-        text: `Analyze these images from Strava and deduce whether or not any
-                  manipulation was done. The idea is that you take in consideration
-                  the fact these two activities are for a challenge so we need to
-                  ensure that they were properly recorded with the images as proof
-                  and that all the data presented records a steady and senseful
-                  progression of the runner in whatever activity they were doing.
+        text: `
+        Analyze the provided Strava activities to determine a valid challenge winner. Each activity will be validated and compared following these strict rules:
 
-                  Use the smallest distance of the activities presented to you and
-                  use that as the base to determine who could win the challenge. For example,
-                  if you get one for 2km and one for 5km, try to determine what would have
-                  been the data of the 5km one at if it had run for 2km as well to ensure
-                  a fair and balanced outcome. An activity is considered invalid if there
-                  is not sign of heart rate being recorded.
+        VALIDATION RULES:
+          Activity is INVALID if ANY of these are true:
+          - If you cannot identify heart rate in the image please mark is as invalid.
+            The heart rate data is usually a toggle at the end of the image you are given. We only want to validate
+            whether this toggle is present or not, it does not need to be turned ON as this indicates there is availability
+            of heart rate data which is the important bit. Only rely on whether or not you identify the string "Heart Rate"
+            in the image.
+          - Sudden pace changes (>3 min/km or mile variation)
+          - Non-natural progression in speed/distance
+          - Activity MUST be running, no cycling or walking
+          - Strava sometimes flags activities as invalid on their UI. Ensure that if you identify an area
+            saying "This activity has been flagged" in red, mark it as invalid automatically.
+            This is EXTREMELY important as it is the most obvious way to identify invalid activities and save you processing
+            time.
 
-                  Reply in this JSON format and only in this
-                  format.
+        COMPARISON RULES:
+        1. Use shortest activity distance as benchmark
+        2. Scale longer activity to benchmark distance using average pace
+        3. Compare scaled times for valid activities
+        4. If times are equal, lower average heart rate wins
+        5. If both activities invalid, no winner declared
+        6. The challenge distance IS ${challengeDistance} meters so consider this as the base distance
 
-                  {
-                    "analysis": [{
-                      "valid": boolean,
-                      "message": string,
-                      "activityId": number
-                    }],
-                    "winnerActivityId": number,
-                    "analysisOutcome": string
-                  }
+        Response must be JSON with this structure:
+        {
+          "analysis": [
+            {
+              "valid": boolean, // Whether the activity was manipulated or failed any of the constraints set above
+              "message": string, // Sassy, funny and roasty message, max 250 chars
+              "activityId": number
+            }
+          ],
+          "winnerActivityId": number | null, // null if no valid winner
+          "analysisOutcome": string // Clear explanation
+        }
 
-                  Where "valid" means whether or not the image was manipulated and
-                  "message" is a brief summary of your analysis. The "message" field
-                  needs to be done in a sassy, funny and roasty. Try to keep it to max
-                  250 characters. "activityId" is the ID of the activity that was
-                  analyzed based on the input you received.
-
-                  "winnerActivityId" is the winner of the challenge according to the analysis
-                  you just performed. Similar to "activityId" this is the ID of the
-                  activity that was analyzed based on the input you received.
-
-                  "analysisOutcome" is a brief summary of the outcome of the analysis
-                  you just performed. Why do you think the winner was the one that
-                  was chosen? Keep this to max 500 characters.
-
-                  ALWAYS reply in the JSON format. DO NOT output anything else
-                  `,
+          Output MUST be valid JSON. No additional text or explanations outside JSON structure.
+          DO NOT OUTPUT anything else than does not comfort the structure you were provided.
+          `,
       },
     ];
 
@@ -170,6 +172,8 @@ export class Agent {
           chunkAcc += chunk.agent.messages[0].content;
         }
       }
+
+      console.debug('🧠 Post analysis chunk:', chunkAcc);
 
       return chunkAcc;
     } catch (error) {
