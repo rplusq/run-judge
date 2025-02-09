@@ -108,7 +108,8 @@ export class Agent {
                   use that as the base to determine who could win the challenge. For example,
                   if you get one for 2km and one for 5km, try to determine what would have
                   been the data of the 5km one at if it had run for 2km as well to ensure
-                  a fair and balanced outcome.
+                  a fair and balanced outcome. An activity is considered invalid if there
+                  is not sign of heart rate being recorded.
 
                   Reply in this JSON format and only in this
                   format.
