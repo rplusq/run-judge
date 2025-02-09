@@ -170,6 +170,19 @@ export class Challenge extends Entity {
     );
   }
 
+  get participantsLength(): BigInt {
+    let value = this.get("participantsLength");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set participantsLength(value: BigInt) {
+    this.set("participantsLength", Value.fromBigInt(value));
+  }
+
   get createdAt(): BigInt {
     let value = this.get("createdAt");
     if (!value || value.kind == ValueKind.NULL) {

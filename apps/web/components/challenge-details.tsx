@@ -386,7 +386,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
                   Participants
                 </CardTitle>
                 <CardDescription className="text-xl font-bold">
-                  {challenge.participants.length}
+                  {challenge.participantsLength}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -497,7 +497,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
               challenge.participants[0]?.participant.toLowerCase() &&
               challenge.isActive &&
               !challenge.isCancelled &&
-              challenge.participants.length === 1 && (
+              parseInt(challenge.participantsLength) === 1 && (
                 <Button
                   onClick={handleCancelClick}
                   variant="destructive"

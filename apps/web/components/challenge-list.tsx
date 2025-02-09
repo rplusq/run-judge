@@ -261,6 +261,7 @@ export function ChallengeList() {
               distance={challenge.challenge.distance}
               entryFee={challenge.challenge.entryFee}
               participants={challenge.challenge.participants.length}
+              participantsLength={challenge.challenge.participantsLength}
               status={getChallengeStatus(challenge.challenge)}
               creator={challenge.challenge.participants[0]?.participant}
               userAddress={address}
