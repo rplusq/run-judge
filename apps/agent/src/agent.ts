@@ -58,6 +58,8 @@ export class Agent {
       const walletProvider =
         await CdpWalletProvider.configureWithWallet(walletProviderCfg);
 
+      console.log({ walletProviderAddress: walletProvider.getAddress() });
+
       // const walletProvider = new ViemWalletProvider(walletClient);
       const agentKit = await AgentKit.from({
         walletProvider,
