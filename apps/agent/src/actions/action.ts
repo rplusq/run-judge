@@ -57,14 +57,10 @@ const validateEnvAndChain = (
   appConfig: AppConfig
 ) => {
   const network = walletProvider.getNetwork();
-  console.log('Environment:', appConfig.environment);
-  console.log('Wallet Chain ID:', network.chainId);
-  console.log('Expected Chain ID:', base.id.toString());
-  console.log('Chain comparison:', network.chainId === base.id.toString());
 
   if (
     appConfig.environment === 'production' &&
-    network.chainId !== base.id.toString()
+    network.chainId?.toString() !== base.id.toString()
   ) {
     throw new Error(
       `Invalid chain ID for env production. Got ${network.chainId}, expected ${base.id.toString()}`
@@ -73,7 +69,7 @@ const validateEnvAndChain = (
 
   if (
     appConfig.environment === 'development' &&
-    network.chainId !== baseSepolia.id.toString()
+    network.chainId?.toString() !== baseSepolia.id.toString()
   ) {
     throw new Error(
       `Invalid chain ID for env development. Got ${network.chainId}, expected ${baseSepolia.id.toString()}`
