@@ -31,6 +31,8 @@ import {
   useReadRunJudgeChallenges as useContractChallenge,
   useWriteRunJudgeSubmitActivity,
   useSimulateRunJudgeSubmitActivity,
+  useWriteRunJudgeCancelChallenge,
+  useSimulateRunJudgeCancelChallenge,
 } from '@/lib/wagmi/generated';
 import {
   Trophy,
@@ -52,7 +54,7 @@ import { CompactIdentity, WinnerIdentity } from '@/components/identity-display';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import { toast } from 'sonner';
-import { baseSepolia } from 'viem/chains';
+import { base } from 'viem/chains';
 
 interface ChallengeDetailsProps {
   challengeId: string;
@@ -103,25 +105,40 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   });
   const { writeContractAsync: submitResult, isPending: isSubmitting } =
     useWriteRunJudgeSubmitActivity();
+  const { writeContractAsync: cancelChallenge, isPending: isCancelling } =
+    useWriteRunJudgeCancelChallenge();
 
   const [stravaActivityId, setStravaActivityId] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isShared, setIsShared] = useState(false);
   const [submitTxHash, setSubmitTxHash] = useState<Hash>();
+  const [cancelTxHash, setCancelTxHash] = useState<Hash>();
   const [toastId, setToastId] = useState<string>();
 
-  // Add simulation hook
+  // Add simulation hooks
   const { data: submitSimulation } = useSimulateRunJudgeSubmitActivity({
     args: [BigInt(challengeId), BigInt(stravaActivityId || '0')],
-    chainId: baseSepolia.id,
+    chainId: base.id,
   });
 
-  // Transaction receipt hook
+  const { data: cancelSimulation } = useSimulateRunJudgeCancelChallenge({
+    args: [BigInt(challengeId)],
+    chainId: base.id,
+  });
+
+  // Transaction receipt hooks
   const { isSuccess: isSubmitSuccess, isError: isSubmitError } =
     useWaitForTransactionReceipt({
       hash: submitTxHash,
-      chainId: baseSepolia.id,
+      chainId: base.id,
+    });
+
+  const { isSuccess: isCancelSuccess, isError: isCancelError } =
+    useWaitForTransactionReceipt({
+      hash: cancelTxHash,
+      chainId: base.id,
     });
 
   // Handle transaction states
@@ -140,6 +157,22 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
       }
     }
   }, [isSubmitSuccess, isSubmitError, submitTxHash, queryClient, toastId]);
+
+  useEffect(() => {
+    if (cancelTxHash) {
+      if (isCancelSuccess) {
+        toast.success('Challenge cancelled successfully!', { id: toastId });
+        queryClient.invalidateQueries({
+          queryKey: ['readRunJudgeChallenges'],
+        });
+        setShowCancelConfirmation(false);
+        setCancelTxHash(undefined);
+      } else if (isCancelError) {
+        toast.error('Failed to cancel challenge', { id: toastId });
+        setCancelTxHash(undefined);
+      }
+    }
+  }, [isCancelSuccess, isCancelError, cancelTxHash, queryClient, toastId]);
 
   if (!challenge || !contractChallenge) {
     return (
@@ -209,7 +242,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
 
       const txHash = await submitResult({
         args: [BigInt(challengeId), BigInt(activityId)],
-        chainId: baseSepolia.id,
+        chainId: base.id,
       });
 
       const id = toast.loading('Submitting activity...').toString();
@@ -231,6 +264,34 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
       setTimeout(() => setIsShared(false), 2000);
     } catch (err) {
       console.error('Failed to copy URL:', err);
+    }
+  };
+
+  const handleCancelClick = () => {
+    setShowCancelConfirmation(true);
+  };
+
+  const handleConfirmedCancel = async () => {
+    try {
+      // Simulate cancellation first
+      if (!cancelSimulation?.request) {
+        toast.error('Failed to simulate challenge cancellation');
+        return;
+      }
+
+      const txHash = await cancelChallenge({
+        args: [BigInt(challengeId)],
+        chainId: base.id,
+      });
+
+      const id = toast.loading('Cancelling challenge...').toString();
+      setToastId(id);
+      setCancelTxHash(txHash as Hash);
+    } catch (error) {
+      console.error('Failed to cancel challenge:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to cancel challenge'
+      );
     }
   };
 
@@ -431,19 +492,21 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
               </div>
             )}
 
-            {userParticipant?.hasSubmitted && (
-              <div className="text-center p-4 rounded-lg bg-muted">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto mb-2" />
-                <p className="text-sm font-medium">
-                  You have submitted your run
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {challenge.participants.length === 1
-                    ? 'Waiting for other participants to join...'
-                    : 'Waiting for verification...'}
-                </p>
-              </div>
-            )}
+            {/* Add Cancel Button */}
+            {address?.toLowerCase() ===
+              challenge.participants[0]?.participant.toLowerCase() &&
+              challenge.isActive &&
+              !challenge.isCancelled &&
+              challenge.participants.length === 1 && (
+                <Button
+                  onClick={handleCancelClick}
+                  variant="destructive"
+                  disabled={isCancelling}
+                  className="w-full"
+                >
+                  {isCancelling ? 'Cancelling...' : 'Cancel Challenge'}
+                </Button>
+              )}
           </div>
 
           {/* Winner Section */}
@@ -508,6 +571,31 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmedSubmit}>
               Submit Activity
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add Cancel Confirmation Dialog */}
+      <AlertDialog
+        open={showCancelConfirmation}
+        onOpenChange={setShowCancelConfirmation}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Challenge</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this challenge? This action cannot
+              be undone. Your entry fee will be refunded.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Challenge</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmedCancel}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Yes, Cancel Challenge
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

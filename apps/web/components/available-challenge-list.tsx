@@ -25,6 +25,7 @@ import {
 import { WalletConnect } from '@/components/wallet-connect';
 import { Timer, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { formatUnits } from 'viem';
 
 type ChallengesResponse = {
   challenges: Challenge[];
@@ -139,7 +140,7 @@ export function AvailableChallengeList() {
               Total Prize Pool
             </CardTitle>
             <CardDescription className="text-xl sm:text-2xl font-bold">
-              ${totalPrizePool.toFixed(2)}
+              ${parseFloat(formatUnits(BigInt(totalPrizePool), 6)).toFixed(2)}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -179,6 +180,7 @@ export function AvailableChallengeList() {
               status={status}
               creator={challenge.participants[0]?.participant}
               userAddress={address}
+              isCancelled={challenge.isCancelled}
             />
           );
         })}

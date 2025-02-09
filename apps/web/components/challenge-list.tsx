@@ -264,6 +264,7 @@ export function ChallengeList() {
               status={getChallengeStatus(challenge.challenge)}
               creator={challenge.challenge.participants[0]?.participant}
               userAddress={address}
+              isCancelled={challenge.challenge.isCancelled}
               onCancel={() => {
                 cancelChallenge({
                   args: [BigInt(challenge.challenge.id)],
