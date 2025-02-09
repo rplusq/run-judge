@@ -1,0 +1,22 @@
+app = 'runjudge-web'
+primary_region = 'mad'
+
+[build]
+
+[http_service]
+internal_port = 3001
+force_https = true
+auto_stop_machines = 'stop'
+auto_start_machines = true
+min_machines_running = 0
+max_maxhines_running = 1
+processes = ['app']
+
+[[vm]]
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 1
+
+[env]
+NEXT_PUBLIC_AGENT_SERVICE_URL = "http://runjudge-agent.internal"
+NEXT_PUBLIC_ONCHAINKIT_API_KEY = "pjhJrIKjK8njKklobMGLzQEXaHyvMxFQ"
