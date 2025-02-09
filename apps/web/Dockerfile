@@ -27,7 +27,7 @@ COPY --from=builder /app/out/pnpm-workspace.yaml ./
 # Some required deps for node-gyp and family...
 RUN apk add --no-cache python3 make g++
 
-RUN pnpm i --frozen-lockfile
+RUN pnpm i --no-frozen-lockfile
 
 # Now build the project
 COPY --from=builder /app/out/full ./
