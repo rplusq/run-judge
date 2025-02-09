@@ -29,7 +29,7 @@ export function useUserChallenges(address: string | undefined) {
       const { participants } = await graphqlClient.request<{
         participants: UserChallenge[];
       }>(GET_USER_CHALLENGES, {
-        address: address.toLowerCase(),
+        addresses: [address.toLowerCase()],
       });
       return participants;
     },
