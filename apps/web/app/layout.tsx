@@ -18,6 +18,18 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isPresentation =
+    typeof window !== 'undefined' &&
+    window.location.pathname.includes('/presentation');
+
+  if (isPresentation) {
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <body suppressHydrationWarning>{children}</body>
+      </html>
+    );
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} flex min-h-screen flex-col`}>
