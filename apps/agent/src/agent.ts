@@ -5,15 +5,14 @@ import {
   MessageContent,
   MessageContentComplex,
 } from '@langchain/core/messages';
-import { IterableReadableStream } from '@langchain/core/utils/stream';
-import { MemorySaver } from '@langchain/langgraph';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { PregelOutputType } from '@langchain/langgraph/pregel';
 import { ChatOpenAI } from '@langchain/openai';
 import { createWalletClient, http, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { baseSepolia } from 'viem/chains';
+import { runJudgeActionProvider } from './actions';
 import type {
+  ActivityResponse,
   AgentAnalyzeInput,
   AgentConfig,
   Agent as AgentType,
@@ -41,7 +40,6 @@ export class Agent {
         },
       });
 
-      console.log('Creating wallet client...');
       const agentAccount = privateKeyToAccount(
         process.env.AGENT_PRIVATE_KEY as Hex
       );
@@ -52,22 +50,23 @@ export class Agent {
       });
 
       const walletProvider = new ViemWalletProvider(walletClient);
-      console.log('Creating AgentKit...');
       const agentKit = await AgentKit.from({
         walletProvider,
-        actionProviders: [],
+        actionProviders: [runJudgeActionProvider],
       });
 
-      console.log('Getting LangChain tools...');
       const tools = await getLangChainTools(agentKit);
 
-      const memory = new MemorySaver();
-
-      console.log('Creating React agent...');
       this.agent = createReactAgent({
         llm,
         tools,
-        checkpointSaver: memory,
+        // Taken from the quickstart guide in the CDP docs as we do not need
+        // any state modifier specific for our on-chain use case
+        stateModifier: `
+        You are a helpful agent that can interact onchain using the Coinbase Developer Platform AgentKit.
+        You are empowered to interact onchain using your tools. If you ever need funds, you can request
+        them from the faucet if you are on network ID 'base-sepolia'.
+        `,
       });
 
       console.log('Agent initialization complete');
@@ -77,9 +76,7 @@ export class Agent {
     }
   }
 
-  async analyze(
-    inputs: AgentAnalyzeInput[]
-  ): Promise<IterableReadableStream<PregelOutputType>> {
+  async analyze(inputs: AgentAnalyzeInput[]): Promise<string> {
     if (!this.agent) {
       throw new Error('Agent not initialized');
     }
@@ -120,9 +117,9 @@ export class Agent {
                     "analysis": [{
                       "valid": boolean,
                       "message": string,
-                      "activityId": string
+                      "activityId": number
                     }],
-                    "winnerActivityId": string,
+                    "winnerActivityId": number,
                     "analysisOutcome": string
                   }
 
@@ -151,15 +148,25 @@ export class Agent {
       const message = new HumanMessage({
         content: messageContent,
       });
+
       console.log('🧠 Sending to model...');
+
       const stream = await this.agent.stream(
         {
           messages: [message],
         },
         this.config
       );
-      console.log('Stream received from model');
-      return stream;
+
+      let chunkAcc: string = '';
+
+      for await (const chunk of stream) {
+        if ('agent' in chunk) {
+          chunkAcc += chunk.agent.messages[0].content;
+        }
+      }
+
+      return chunkAcc;
     } catch (error) {
       console.error('Error in agentAnalyze:', error);
 
@@ -172,5 +179,43 @@ export class Agent {
       }
       throw error;
     }
+  }
+
+  async analyzeActivityOutcome(
+    challengeId: number,
+    activityOutcome: ActivityResponse
+  ): Promise<string> {
+    if (!this.agent) {
+      throw new Error('Agent not initialized');
+    }
+
+    const message = new HumanMessage({
+      content: `
+        Based on the activity outcome, declare the winner of the challenge ${challengeId}.
+        The winner is the activity with the ID ${activityOutcome.winnerActivityId}.
+      `,
+    });
+
+    console.log('🧠 Sending analysis outcome to model...');
+    const stream = await this.agent.stream(
+      {
+        messages: [message],
+      },
+      this.config
+    );
+
+    let chunkAcc: string = '';
+
+    for await (const chunk of stream) {
+      if ('agent' in chunk) {
+        chunkAcc += chunk.agent.messages[0].content;
+      } else if ('tools' in chunk) {
+        chunkAcc += chunk.tools.messages[0].content;
+      }
+    }
+
+    console.log('Post analysis chunk:', chunkAcc);
+
+    return chunkAcc;
   }
 }
