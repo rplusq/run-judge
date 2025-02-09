@@ -13,11 +13,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useChallenge as useSubgraphChallenge } from '@/lib/hooks/use-subgraph';
-import { useChallenge as useContractChallenge } from '@/lib/hooks/use-run-judge';
-import { useSubmitResult } from '@/lib/hooks/use-run-judge';
 import { WalletButton } from '@/components/wallet-button';
 import { JoinChallengeButton } from '@/components/join-challenge-button';
 import { useAccount } from 'wagmi';
+import {
+  useReadRunJudgeChallenges as useContractChallenge,
+  useWriteRunJudgeSubmitResult,
+} from '@/lib/wagmi/generated';
 
 interface ChallengeDetailsProps {
   challengeId: string;
@@ -26,8 +28,11 @@ interface ChallengeDetailsProps {
 export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   const { address } = useAccount();
   const { data: challenge } = useSubgraphChallenge(challengeId);
-  const { data: contractChallenge } = useContractChallenge(BigInt(challengeId));
-  const { submitResult, isPending: isSubmitting } = useSubmitResult();
+  const { data: contractChallenge } = useContractChallenge({
+    args: [BigInt(challengeId)],
+  });
+  const { writeContractAsync: submitResult, isPending: isSubmitting } =
+    useWriteRunJudgeSubmitResult();
 
   const [stravaActivityId, setStravaActivityId] = useState('');
 
@@ -52,7 +57,9 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   const handleSubmit = async () => {
     if (!stravaActivityId) return;
     try {
-      await submitResult(BigInt(challengeId), BigInt(stravaActivityId));
+      await submitResult({
+        args: [BigInt(challengeId), BigInt(stravaActivityId)],
+      });
     } catch (error) {
       console.error('Failed to submit result:', error);
     }
