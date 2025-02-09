@@ -1,8 +1,22 @@
 'use server';
 
+import { prisma } from '@/lib/prisma';
+
 interface Participant {
   address: string;
   activityId: string | null;
+}
+
+interface ActivityAnalysis {
+  valid: boolean;
+  message: string;
+  activityId: number;
+}
+
+interface AnalysisResponse {
+  analysis: ActivityAnalysis[];
+  winnerActivityId: number;
+  analysisOutcome: string;
 }
 
 export async function triggerRunJudgeAgent(
@@ -36,6 +50,24 @@ export async function triggerRunJudgeAgent(
         `Failed to trigger run judge agent: ${await response.text()}`
       );
     }
+
+    const analysisResult = (await response.json()) as AnalysisResponse;
+
+    // Store the analysis results in the database
+    await prisma.challengeAnalysis.create({
+      data: {
+        challengeId: parseInt(challengeId),
+        winnerActivityId: analysisResult.winnerActivityId,
+        analysisOutcome: analysisResult.analysisOutcome,
+        activityResults: {
+          create: analysisResult.analysis.map((result) => ({
+            activityId: result.activityId,
+            valid: result.valid,
+            message: result.message,
+          })),
+        },
+      },
+    });
 
     return { success: true };
   } catch (error) {

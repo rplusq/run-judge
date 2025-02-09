@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { formatUnits, type Hash } from 'viem';
 import {
   Card,
@@ -48,6 +48,9 @@ import {
   AlertTriangle,
   Check,
   Share2,
+  Brain,
+  Loader2,
+  Microscope,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CompactIdentity, WinnerIdentity } from '@/components/identity-display';
@@ -56,9 +59,30 @@ import { useWaitForTransactionReceipt } from 'wagmi';
 import { toast } from 'sonner';
 import { baseSepolia } from 'viem/chains';
 import { triggerRunJudgeAgent } from '@/app/actions';
+import { useChallengeAnalysis } from '@/lib/hooks/use-challenge-analysis';
 
 interface ChallengeDetailsProps {
   challengeId: string;
+}
+
+interface ActivityResult {
+  id: number;
+  activityId: number;
+  valid: boolean;
+  message: string;
+  challengeAnalysisId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Analysis {
+  id: number;
+  challengeId: number;
+  winnerActivityId: number;
+  analysisOutcome: string;
+  activityResults: ActivityResult[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 const getStatusConfig = (challenge: {
@@ -95,6 +119,157 @@ const getStatusConfig = (challenge: {
         variant: 'default' as const,
         iconClass: 'text-yellow-500',
       };
+};
+
+const RunJudgeStatus = ({
+  challengeId,
+  participants,
+}: {
+  challengeId: string;
+  participants: any[];
+}) => {
+  const [isPinging, setIsPinging] = useState(false);
+  const [pingCount, setPingCount] = useState(0);
+
+  const handlePing = useCallback(async () => {
+    setIsPinging(true);
+    setPingCount((prev) => prev + 1);
+    try {
+      await triggerRunJudgeAgent(
+        challengeId,
+        participants.map((p) => ({
+          address: p.participant,
+          activityId: p.stravaActivityId,
+        }))
+      );
+      toast.success('RunJudge has been pinged! 🏃‍♂️');
+    } catch (error) {
+      console.error('Error pinging RunJudge:', error);
+      toast.error('RunJudge is too tired to respond 😴');
+    } finally {
+      setIsPinging(false);
+    }
+  }, [challengeId, participants]);
+
+  const getPingMessage = () => {
+    if (pingCount === 0) return 'Ping me if I missed something!';
+    if (pingCount === 1) return 'Ouch! Once was enough!';
+    if (pingCount === 2) return "Hey, I'm working here! 🏃‍♂️";
+    if (pingCount === 3) return "Stop it, I'm analyzing! 🧠";
+    return "Ok, now you're just being mean! 😤";
+  };
+
+  return (
+    <Card className="bg-primary/5 border-primary/20">
+      <CardContent className="pt-6">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-primary animate-pulse" />
+            <span className="font-semibold">RunJudge is Analyzing</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Verifying activities and determining the winner...
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePing}
+            disabled={isPinging}
+            className="mt-2"
+          >
+            {isPinging ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Pinging RunJudge...
+              </>
+            ) : (
+              getPingMessage()
+            )}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const AnalysisResults = ({ challengeId }: { challengeId: string }) => {
+  const { data: analysis, isLoading } = useChallengeAnalysis(challengeId) as {
+    data: Analysis | null;
+    isLoading: boolean;
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="font-semibold">Loading Analysis...</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!analysis) return null;
+
+  return (
+    <Card className="bg-primary/5 border-primary/20">
+      <CardContent className="pt-6 space-y-6">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex items-center gap-2">
+            <Microscope className="h-5 w-5 text-primary" />
+            <span className="font-semibold">Analysis Results</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {analysis.analysisOutcome}
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {analysis.activityResults.map((result: ActivityResult) => (
+            <Card key={result.activityId}>
+              <CardContent className="pt-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={result.valid ? 'secondary' : 'destructive'}
+                      >
+                        {result.valid ? 'Valid' : 'Invalid'}
+                      </Badge>
+                      <a
+                        href={`https://www.strava.com/activities/${result.activityId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
+                      >
+                        Activity {result.activityId}
+                        <ArrowUpRight className="h-3 w-3" />
+                      </a>
+                    </div>
+                    <p className="text-sm">{result.message}</p>
+                  </div>
+                  {analysis.winnerActivityId === result.activityId && (
+                    <Badge
+                      variant="outline"
+                      className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                    >
+                      <Trophy className="h-3 w-3 mr-1" />
+                      Winner
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
@@ -516,6 +691,22 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
               })}
             </div>
           </div>
+
+          {/* Analysis Status */}
+          {challenge.participants.length === 2 &&
+            challenge.participants.every((p) => p.stravaActivityId) && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Analysis Status</h3>
+                {!challenge.winner ? (
+                  <RunJudgeStatus
+                    challengeId={challengeId}
+                    participants={challenge.participants}
+                  />
+                ) : (
+                  <AnalysisResults challengeId={challengeId} />
+                )}
+              </div>
+            )}
 
           {/* Action Section */}
           <div className="space-y-4">
