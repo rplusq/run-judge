@@ -1,19 +1,21 @@
 import { ChallengeDetails } from '@/components/challenge-details';
 import { Metadata } from 'next';
 
-type Props = {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+type PageProps = {
+  params: Promise<{
+    id: string;
+  }>;
 };
 
 export const metadata: Metadata = {
   title: 'Challenge Details',
 };
 
-export default async function ChallengePage({ params }: Props) {
+export default async function ChallengePage({ params }: PageProps) {
+  const { id } = await params;
   return (
     <main className="container max-w-lg py-12">
-      <ChallengeDetails challengeId={params.id} />
+      <ChallengeDetails challengeId={id} />
     </main>
   );
 }

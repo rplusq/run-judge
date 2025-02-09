@@ -6,6 +6,7 @@ import {
   WalletDropdown,
   WalletDropdownLink,
   WalletDropdownDisconnect,
+  WalletDropdownFundLink,
 } from '@coinbase/onchainkit/wallet';
 import {
   Address,
@@ -18,7 +19,7 @@ import {
 export function WalletButton() {
   return (
     <Wallet>
-      <ConnectWallet text="Sign in with Web3">
+      <ConnectWallet>
         <Avatar className="h-6 w-6" />
         <Name />
       </ConnectWallet>
@@ -32,6 +33,7 @@ export function WalletButton() {
         <WalletDropdownLink icon="wallet" href="https://wallet.coinbase.com">
           Wallet
         </WalletDropdownLink>
+        <WalletDropdownFundLink />
         <WalletDropdownDisconnect />
       </WalletDropdown>
     </Wallet>

@@ -1,7 +1,7 @@
 'use client';
 
 import { formatEther } from 'viem';
-import { useJoinChallenge } from '@/lib/hooks/use-run-judge';
+import { useWriteRunJudgeJoinChallenge } from '@/lib/wagmi/generated';
 import { Button } from '@/components/ui/button';
 
 interface JoinChallengeButtonProps {
@@ -13,12 +13,15 @@ export function JoinChallengeButton({
   challengeId,
   entryFee,
 }: JoinChallengeButtonProps) {
-  const { joinChallenge, isPending } = useJoinChallenge();
+  const { writeContractAsync: joinChallenge, isPending } =
+    useWriteRunJudgeJoinChallenge();
   const entryFeeUSD = parseFloat(formatEther(BigInt(entryFee))) * 1;
 
   const handleJoin = async () => {
     try {
-      await joinChallenge(BigInt(challengeId));
+      await joinChallenge({
+        args: [BigInt(challengeId)],
+      });
     } catch (error) {
       console.error('Failed to join challenge:', error);
     }

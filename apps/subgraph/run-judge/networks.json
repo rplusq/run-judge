@@ -1,8 +1,0 @@
-{
-  "base-sepolia": {
-    "RunJudge": {
-      "address": "0x16a31ef6A50712212d0702d05c895969b3b58E1f",
-      "startBlock": 21636195
-    }
-  }
-}
