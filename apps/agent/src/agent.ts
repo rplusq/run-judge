@@ -1,8 +1,4 @@
-import {
-  AgentKit,
-  CdpWalletProvider,
-  type CdpWalletProviderConfig,
-} from '@coinbase/agentkit';
+import { AgentKit, ViemWalletProvider } from '@coinbase/agentkit';
 import { getLangChainTools } from '@coinbase/agentkit-langchain';
 import {
   HumanMessage,
@@ -11,6 +7,8 @@ import {
 } from '@langchain/core/messages';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
+import { createWalletClient, Hex, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 import { runJudgeActionProvider } from './actions';
 import type {
   ActivityResponse,
@@ -42,21 +40,14 @@ export class Agent {
         },
       });
 
-      const walletProviderCfg: CdpWalletProviderConfig & {
-        mnemonicPhrase: string;
-        networkId: string;
-      } = {
-        apiKeyName: appConfig.cdp.apiKeyName,
-        apiKeyPrivateKey: appConfig.cdp.apiKeyPrivateKey,
-        mnemonicPhrase: appConfig.cdp.mnemonicPhrase,
-        networkId:
-          appConfig.environment === 'production'
-            ? 'base-mainnet'
-            : 'base-sepolia',
-      };
+      const account = privateKeyToAccount(process.env.AGENT_PRIVATE_KEY as Hex);
+      const walletClient = createWalletClient({
+        account: account,
+        transport: http(appConfig.rpcUrl),
+        chain: appConfig.chain,
+      });
 
-      const walletProvider =
-        await CdpWalletProvider.configureWithWallet(walletProviderCfg);
+      const walletProvider = new ViemWalletProvider(walletClient);
 
       console.log({ walletProviderAddress: walletProvider.getAddress() });
 

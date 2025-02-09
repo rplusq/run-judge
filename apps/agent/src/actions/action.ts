@@ -1,4 +1,4 @@
-import { customActionProvider, EvmWalletProvider } from '@coinbase/agentkit';
+import { customActionProvider, ViemWalletProvider } from '@coinbase/agentkit';
 import { encodeFunctionData } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import { z } from 'zod';
@@ -7,7 +7,7 @@ import { runJudgeABI } from './abi';
 import { DeclareWinnerSchema } from './schemas';
 
 export const runJudgeActionProvider = (appConfig: AppConfig) =>
-  customActionProvider<EvmWalletProvider>({
+  customActionProvider<ViemWalletProvider>({
     name: 'declare_winner',
     description: `
     This action will declare a winner of a challenge on-chain in the
@@ -21,7 +21,7 @@ export const runJudgeActionProvider = (appConfig: AppConfig) =>
     `,
     schema: DeclareWinnerSchema,
     invoke: async (
-      walletProvider: EvmWalletProvider,
+      walletProvider: ViemWalletProvider,
       args: z.infer<typeof DeclareWinnerSchema>
     ) => {
       validateEnvAndChain(walletProvider, appConfig);
@@ -51,7 +51,7 @@ export const runJudgeActionProvider = (appConfig: AppConfig) =>
 
 // Simply validates env and network before sending a transaction
 const validateEnvAndChain = (
-  walletProvider: EvmWalletProvider,
+  walletProvider: ViemWalletProvider,
   appConfig: AppConfig
 ) => {
   const network = walletProvider.getNetwork();
