@@ -1,4 +1,8 @@
-import { AgentKit, ViemWalletProvider } from '@coinbase/agentkit';
+import {
+  AgentKit,
+  CdpWalletProvider,
+  type CdpWalletProviderConfig,
+} from '@coinbase/agentkit';
 import { getLangChainTools } from '@coinbase/agentkit-langchain';
 import {
   HumanMessage,
@@ -7,18 +11,14 @@ import {
 } from '@langchain/core/messages';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
-import { createWalletClient, http, type Hex } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
 import { runJudgeActionProvider } from './actions';
-import { loadAppConfig } from './config';
 import type {
   ActivityResponse,
   AgentAnalyzeInput,
   AgentConfig,
   Agent as AgentType,
+  AppConfig,
 } from './types';
-
-const appConfig = loadAppConfig();
 
 export class Agent {
   private agent: AgentType | null;
@@ -32,7 +32,7 @@ export class Agent {
     this.agent = null;
   }
 
-  async initialize(): Promise<void> {
+  async initialize(appConfig: AppConfig): Promise<void> {
     try {
       const llm = new ChatOpenAI({
         model: 'google/gemini-2.0-flash-001',
@@ -42,19 +42,19 @@ export class Agent {
         },
       });
 
-      const agentAccount = privateKeyToAccount(
-        process.env.AGENT_PRIVATE_KEY as Hex
-      );
-      const walletClient = createWalletClient({
-        account: agentAccount,
-        transport: http(appConfig.rpcUrl),
-        chain: appConfig.chain,
-      });
+      const walletProviderCfg: CdpWalletProviderConfig = {
+        apiKeyName: appConfig.cdp.apiKeyName,
+        apiKeyPrivateKey: appConfig.cdp.apiKeyPrivateKey,
+        network: appConfig.chain,
+      };
 
-      const walletProvider = new ViemWalletProvider(walletClient);
+      const walletProvider =
+        await CdpWalletProvider.configureWithWallet(walletProviderCfg);
+
+      // const walletProvider = new ViemWalletProvider(walletClient);
       const agentKit = await AgentKit.from({
         walletProvider,
-        actionProviders: [runJudgeActionProvider],
+        actionProviders: [runJudgeActionProvider(appConfig)],
       });
 
       const tools = await getLangChainTools(agentKit);

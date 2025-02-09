@@ -1,5 +1,5 @@
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { Address, defineChain } from 'viem';
+import { Address, defineChain, Hex } from 'viem';
 import { z } from 'zod';
 
 export type AgentConfig = {
@@ -40,4 +40,8 @@ export type AppConfig = {
   rpcUrl: string;
   environment: 'development' | 'production';
   contractAddress: Address;
+  cdp: {
+    apiKeyName: string;
+    apiKeyPrivateKey: Hex;
+  };
 };

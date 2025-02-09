@@ -1,17 +1,15 @@
-import { customActionProvider, ViemWalletProvider } from '@coinbase/agentkit';
+import { customActionProvider, EvmWalletProvider } from '@coinbase/agentkit';
 import { encodeFunctionData } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import { z } from 'zod';
-import { loadAppConfig } from '../config';
 import { AppConfig } from '../types';
 import { runJudgeABI } from './abi';
 import { DeclareWinnerSchema } from './schemas';
 
-const appConfig = loadAppConfig();
-
-export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
-  name: 'declare_winner',
-  description: `
+export const runJudgeActionProvider = (appConfig: AppConfig) =>
+  customActionProvider<EvmWalletProvider>({
+    name: 'declare_winner',
+    description: `
     This action will declare a winner of a challenge on-chain in the
     runjudge contract.
 
@@ -21,39 +19,39 @@ export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
 
     We only need to have enough funds to pay for the gas fees.
     `,
-  schema: DeclareWinnerSchema,
-  invoke: async (
-    walletProvider: ViemWalletProvider,
-    args: z.infer<typeof DeclareWinnerSchema>
-  ) => {
-    validateEnvAndChain(walletProvider, appConfig);
+    schema: DeclareWinnerSchema,
+    invoke: async (
+      walletProvider: EvmWalletProvider,
+      args: z.infer<typeof DeclareWinnerSchema>
+    ) => {
+      validateEnvAndChain(walletProvider, appConfig);
 
-    // Send transaction to the RunJudge contract to deeclare the winner of the challenge
-    const data = encodeFunctionData({
-      abi: runJudgeABI,
-      functionName: 'declareWinner',
-      args: [BigInt(args.challengeId), BigInt(args.stravaActivityId)],
-    });
-
-    try {
-      const txHash = await walletProvider.sendTransaction({
-        to: appConfig.contractAddress,
-        data,
+      // Send transaction to the RunJudge contract to deeclare the winner of the challenge
+      const data = encodeFunctionData({
+        abi: runJudgeABI,
+        functionName: 'declareWinner',
+        args: [BigInt(args.challengeId), BigInt(args.stravaActivityId)],
       });
 
-      await walletProvider.waitForTransactionReceipt(txHash);
+      try {
+        const txHash = await walletProvider.sendTransaction({
+          to: appConfig.contractAddress,
+          data,
+        });
 
-      return txHash;
-    } catch (error: unknown) {
-      console.error('Error declaring winner:', error);
-      throw error;
-    }
-  },
-});
+        await walletProvider.waitForTransactionReceipt(txHash);
+
+        return txHash;
+      } catch (error: unknown) {
+        console.error('Error declaring winner:', error);
+        throw error;
+      }
+    },
+  });
 
 // Simply validates env and network before sending a transaction
 const validateEnvAndChain = (
-  walletProvider: ViemWalletProvider,
+  walletProvider: EvmWalletProvider,
   appConfig: AppConfig
 ) => {
   const network = walletProvider.getNetwork();
