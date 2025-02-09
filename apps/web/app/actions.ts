@@ -21,7 +21,8 @@ interface AnalysisResponse {
 
 export async function triggerRunJudgeAgent(
   challengeId: string,
-  participants: Participant[]
+  participants: Participant[],
+  challengeDistance: number
 ) {
   const runJudgeAgentUrl =
     process.env.NEXT_PUBLIC_RUN_JUDGE_AGENT_URL || 'http://localhost:3001';
@@ -33,16 +34,26 @@ export async function triggerRunJudgeAgent(
     throw new Error('Expected exactly 2 participants with activity IDs');
   }
 
+  // Convert activity IDs to numbers
+  const activityIds = validParticipants.map((p) => parseInt(p.activityId!));
+
+  const requestBody = {
+    challengeId: parseInt(challengeId),
+    activityIds,
+    challengeDistance: challengeDistance,
+  };
+
+  console.log({
+    body: JSON.stringify(requestBody),
+  });
+
   try {
     const response = await fetch(`${runJudgeAgentUrl}/analyze`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        challengeId: parseInt(challengeId),
-        activityIds: validParticipants.map((p) => p.activityId),
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {

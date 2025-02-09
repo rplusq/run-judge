@@ -124,9 +124,11 @@ const getStatusConfig = (challenge: {
 const RunJudgeStatus = ({
   challengeId,
   participants,
+  distanceMeters,
 }: {
   challengeId: string;
   participants: any[];
+  distanceMeters: number;
 }) => {
   const [isPinging, setIsPinging] = useState(false);
   const [pingCount, setPingCount] = useState(0);
@@ -140,7 +142,8 @@ const RunJudgeStatus = ({
         participants.map((p) => ({
           address: p.participant,
           activityId: p.stravaActivityId,
-        }))
+        })),
+        distanceMeters
       );
       toast.success('RunJudge has been pinged! 🏃‍♂️');
     } catch (error) {
@@ -149,7 +152,7 @@ const RunJudgeStatus = ({
     } finally {
       setIsPinging(false);
     }
-  }, [challengeId, participants]);
+  }, [challengeId, participants, distanceMeters]);
 
   const getPingMessage = () => {
     if (pingCount === 0) return 'Ping me if I missed something!';
@@ -284,6 +287,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   const { writeContractAsync: cancelChallenge, isPending: isCancelling } =
     useWriteRunJudgeCancelChallenge();
 
+  // Initialize all state variables
   const [stravaActivityId, setStravaActivityId] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
@@ -292,6 +296,43 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   const [submitTxHash, setSubmitTxHash] = useState<Hash>();
   const [cancelTxHash, setCancelTxHash] = useState<Hash>();
   const [toastId, setToastId] = useState<string>();
+
+  // Transaction receipt hooks
+  const { isSuccess: isSubmitSuccess, isError: isSubmitError } =
+    useWaitForTransactionReceipt({
+      hash: submitTxHash,
+      chainId: baseSepolia.id,
+    });
+
+  const { isSuccess: isCancelSuccess, isError: isCancelError } =
+    useWaitForTransactionReceipt({
+      hash: cancelTxHash,
+      chainId: baseSepolia.id,
+    });
+
+  // Compute derived values from challenge data
+  const startTime = challenge
+    ? new Date(parseInt(challenge.startTime) * 1000)
+    : new Date();
+  const distanceMeters = challenge ? parseInt(challenge.distance) : 0;
+  const distanceKm = distanceMeters / 1000;
+  const entryFeeUSD = challenge
+    ? parseFloat(formatUnits(BigInt(challenge.entryFee), 6))
+    : 0;
+  const hasStarted = challenge
+    ? Math.floor(Date.now() / 1000) >= parseInt(challenge.startTime)
+    : false;
+  const userParticipant = challenge?.participants.find(
+    (p) => p.participant.toLowerCase() === address?.toLowerCase()
+  );
+  const status = challenge
+    ? getStatusConfig(challenge)
+    : {
+        label: 'Loading',
+        Icon: Timer,
+        variant: 'outline' as const,
+        iconClass: '',
+      };
 
   // Extract activity ID from Strava URL or raw input
   const extractActivityId = (input: string) => {
@@ -325,25 +366,11 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
     chainId: baseSepolia.id,
   });
 
-  // Transaction receipt hooks
-  const { isSuccess: isSubmitSuccess, isError: isSubmitError } =
-    useWaitForTransactionReceipt({
-      hash: submitTxHash,
-      chainId: baseSepolia.id,
-    });
-
-  const { isSuccess: isCancelSuccess, isError: isCancelError } =
-    useWaitForTransactionReceipt({
-      hash: cancelTxHash,
-      chainId: baseSepolia.id,
-    });
-
   // Handle transaction states
   useEffect(() => {
     if (submitTxHash) {
       if (isSubmitSuccess) {
         toast.success('Activity submitted successfully!', { id: toastId });
-        // Add delay to allow subgraph to index
         setTimeout(async () => {
           queryClient.invalidateQueries({
             queryKey: ['readRunJudgeChallenges'],
@@ -355,7 +382,6 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
             queryKey: ['challenge', challengeId],
           });
 
-          // If this is the second participant submitting, trigger the run judge agent
           if (
             challenge?.participants.length === 2 &&
             challenge.participants.every((p) => p.stravaActivityId)
@@ -366,7 +392,8 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
                 challenge.participants.map((p) => ({
                   address: p.participant,
                   activityId: p.stravaActivityId,
-                }))
+                })),
+                distanceMeters
               );
             } catch (error) {
               console.error('Error triggering run judge agent:', error);
@@ -379,7 +406,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
           }
 
           setShowConfirmation(false);
-        }, 3000); // Wait 3 seconds for subgraph indexing
+        }, 3000);
         setSubmitTxHash(undefined);
       } else if (isSubmitError) {
         toast.error('Failed to submit activity', { id: toastId });
@@ -394,13 +421,13 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
     toastId,
     challengeId,
     challenge?.participants,
+    distanceMeters,
   ]);
 
   useEffect(() => {
     if (cancelTxHash) {
       if (isCancelSuccess) {
         toast.success('Challenge cancelled successfully!', { id: toastId });
-        // Add delay to allow subgraph to index
         setTimeout(() => {
           queryClient.invalidateQueries({
             queryKey: ['readRunJudgeChallenges'],
@@ -411,11 +438,10 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
           queryClient.invalidateQueries({
             queryKey: ['available-challenges'],
           });
-          // Invalidate the specific challenge query
           queryClient.invalidateQueries({
             queryKey: ['challenge', challengeId],
           });
-        }, 3000); // Wait 3 seconds for subgraph indexing
+        }, 3000);
         setShowCancelConfirmation(false);
         setCancelTxHash(undefined);
       } else if (isCancelError) {
@@ -447,16 +473,6 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
       </Card>
     );
   }
-
-  const startTime = new Date(parseInt(challenge.startTime) * 1000);
-  const distanceKm = parseInt(challenge.distance) / 1000;
-  const entryFeeUSD = parseFloat(formatUnits(BigInt(challenge.entryFee), 6));
-  const hasStarted =
-    Math.floor(Date.now() / 1000) >= parseInt(challenge.startTime);
-  const userParticipant = challenge.participants.find(
-    (p) => p.participant.toLowerCase() === address?.toLowerCase()
-  );
-  const statusConfig = getStatusConfig(challenge);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -587,15 +603,15 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
               </CardDescription>
             </div>
             <Badge
-              variant={statusConfig.variant}
+              variant={status.variant}
               className={cn(
                 'inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium',
-                challenge.isCancelled && 'bg-destructive/10 text-destructive',
-                challenge.winner && 'bg-green-500/10 text-green-500'
+                challenge?.isCancelled && 'bg-destructive/10 text-destructive',
+                challenge?.winner && 'bg-green-500/10 text-green-500'
               )}
             >
-              <statusConfig.Icon className="h-3 w-3 shrink-0" />
-              {statusConfig.label}
+              {status.Icon && <status.Icon className="h-3 w-3 shrink-0" />}
+              {status.label}
             </Badge>
           </div>
         </CardHeader>
@@ -701,6 +717,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
                   <RunJudgeStatus
                     challengeId={challengeId}
                     participants={challenge.participants}
+                    distanceMeters={distanceMeters}
                   />
                 ) : (
                   <AnalysisResults challengeId={challengeId} />
