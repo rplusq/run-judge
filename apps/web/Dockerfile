@@ -50,8 +50,15 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=deps /app/apps/web/next.config.js ./
 COPY --from=deps /app/apps/web/package.json ./
 
+# Copy the standalone build
 COPY --from=deps --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
-COPY --from=deps --chown=nextjs:nodejs /app/apps/web/.next/static ./.next/static
+
+# Create the public directory
+RUN mkdir -p /app/apps/web/.next/static
+COPY --from=deps --chown=nextjs:nodejs /app/apps/web/.next/static /app/apps/web/.next/static
+
+# Copy public assets if they exist
+COPY --from=deps --chown=nextjs:nodejs /app/apps/web/public /app/apps/web/public
 
 # Set the correct permissions
 USER nextjs
@@ -63,4 +70,4 @@ ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
 # Start the application
-CMD ["node", "apps/web/server.js"]
+CMD node apps/web/server.js
