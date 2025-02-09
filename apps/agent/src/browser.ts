@@ -63,9 +63,15 @@ function convertCookieEditorFormat(cookies: CookieEditorCookie[]): Cookie[] {
 
 export async function capturePageWithCookies(
   url: string,
-  cookies: CookieEditorCookie[] | Cookie[]
+  cookies: CookieEditorCookie[] | Cookie[],
+  environment: 'development' | 'production'
 ): Promise<Buffer> {
   console.log(`📸 Capturing ${url}`);
+
+  const chromiumPath =
+    environment === 'production'
+      ? '/usr/bin/chromium-browser'
+      : '/opt/homebrew/bin/chromium';
 
   const playwrightCookies =
     'hostOnly' in (cookies[0] || {})
@@ -76,7 +82,7 @@ export async function capturePageWithCookies(
 
   const browser = await chromium.launch({
     headless: true,
-    executablePath: '/usr/bin/chromium-browser',
+    executablePath: chromiumPath,
     args: [
       '--disable-blink-features=AutomationControlled',
       '--disable-features=IsolateOrigins,site-per-process',

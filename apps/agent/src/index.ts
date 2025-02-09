@@ -52,7 +52,11 @@ app.post('/analyze', async (c) => {
 
     // This takes an actual screentshot of the page... 🤫🤫🤫
     for (const url of urls) {
-      const screenshot = await capturePageWithCookies(url, parsedCookies);
+      const screenshot = await capturePageWithCookies(
+        url,
+        parsedCookies,
+        loadAppConfig().environment
+      );
 
       const data: AgentAnalyzeInput = {
         base64Image: await compressScreenshot(screenshot),
@@ -64,7 +68,10 @@ app.post('/analyze', async (c) => {
       inputToAnalyze.push(data);
     }
 
-    const response = await agent.analyze(inputToAnalyze);
+    const response = await agent.analyze(
+      inputToAnalyze,
+      parsedBody.data.challengeDistance
+    );
 
     // Sometimes the model returns json markup. We need to remove it
     const cleanedChunk = response.replace('```json', '').replace('```', '');
