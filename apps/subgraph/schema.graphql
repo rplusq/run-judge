@@ -9,6 +9,7 @@ type Challenge @entity {
   winningActivityId: BigInt
   totalPrize: BigInt!
   participants: [Participant!]! @derivedFrom(field: "challenge")
+  participantsLength: BigInt!
   createdAt: BigInt!
   cancelledAt: BigInt
 }

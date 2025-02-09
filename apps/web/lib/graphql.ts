@@ -17,6 +17,7 @@ export type Challenge = {
   isCancelled: boolean;
   winner: string | null;
   totalPrize: string;
+  participantsLength: string;
   participants: {
     participant: string;
     hasSubmitted: boolean;
@@ -35,6 +36,7 @@ export type UserChallenge = {
     isCancelled: boolean;
     winner: string | null;
     totalPrize: string;
+    participantsLength: string;
     participants: {
       participant: string;
       hasSubmitted: boolean;
@@ -57,6 +59,7 @@ export const GET_CHALLENGE = `
       isCancelled
       winner
       totalPrize
+      participantsLength
       cancelledAt
       participants {
         participant
@@ -79,6 +82,7 @@ export const GET_USER_CHALLENGES = `
         isCancelled
         winner
         cancelledAt
+        participantsLength
         participants {
           participant
           hasSubmitted
@@ -97,6 +101,7 @@ export const GET_AVAILABLE_CHALLENGES = `
       where: {
         isCancelled: false,
         winner: null,
+        participantsLength: "1",
         participants_: {
           participant_not: $address
         }
@@ -112,6 +117,7 @@ export const GET_AVAILABLE_CHALLENGES = `
       isCancelled
       winner
       totalPrize
+      participantsLength
       participants {
         participant
         hasSubmitted

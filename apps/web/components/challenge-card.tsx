@@ -25,6 +25,7 @@ interface ChallengeCardProps {
   distance: string;
   entryFee: string;
   participants: number;
+  participantsLength: string;
   status: 'open' | 'active' | 'completed' | 'cancelled';
   winner?: string;
   creator?: string;
@@ -74,6 +75,7 @@ export function ChallengeCard({
   distance,
   entryFee,
   participants,
+  participantsLength,
   status,
   winner,
   creator,
@@ -91,7 +93,8 @@ export function ChallengeCard({
     creator &&
     userAddress &&
     creator.toLowerCase() === userAddress.toLowerCase();
-  const canCancel = isCreator && !isCancelled && participants === 1 && onCancel;
+  const canCancel =
+    isCreator && !isCancelled && parseInt(participantsLength) === 1 && onCancel;
 
   const statusConfig = getStatusConfig(status);
 
@@ -135,7 +138,7 @@ export function ChallengeCard({
                   <Users className="h-4 w-4" />
                   Participants
                 </span>
-                <p className="font-medium">{participants}</p>
+                <p className="font-medium">{participantsLength}</p>
               </div>
             </div>
 

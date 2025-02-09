@@ -177,6 +177,7 @@ export function AvailableChallengeList() {
               distance={challenge.distance}
               entryFee={challenge.entryFee}
               participants={challenge.participants.length}
+              participantsLength={challenge.participantsLength}
               status={status}
               creator={challenge.participants[0]?.participant}
               userAddress={address}

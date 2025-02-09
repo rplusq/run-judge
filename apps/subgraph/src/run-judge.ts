@@ -16,6 +16,7 @@ export function handleChallengeCreated(event: ChallengeCreated): void {
   challenge.isActive = true;
   challenge.isCancelled = false;
   challenge.totalPrize = BigInt.fromI32(0);
+  challenge.participantsLength = BigInt.fromI32(0);
   challenge.createdAt = event.block.timestamp;
   challenge.save();
 }
@@ -34,10 +35,13 @@ export function handleChallengeJoined(event: ChallengeJoined): void {
   participant.joinedAt = event.block.timestamp;
   participant.save();
 
-  // Update challenge total prize
+  // Update challenge total prize and participants length
   const challenge = Challenge.load(event.params.challengeId.toString());
   if (challenge) {
     challenge.totalPrize = challenge.totalPrize.plus(challenge.entryFee);
+    challenge.participantsLength = challenge.participantsLength.plus(
+      BigInt.fromI32(1)
+    );
     challenge.save();
   }
 }
