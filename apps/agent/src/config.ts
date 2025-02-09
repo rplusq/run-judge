@@ -13,14 +13,12 @@ export const loadAppConfig: () => AppConfig = () => {
     .toString('utf-8')
     .replace(/\\n/g, '\n');
 
-  console.log(cdpApiKeyPrivateKey);
-
   return {
     environment,
     contractAddress:
       environment === 'production'
         ? '0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0'
-        : '0xbabeC3dF164f14672c08AA277Af9936532c283Ba',
+        : '0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0',
     chain: environment === 'production' ? base : baseSepolia,
     cdp: {
       apiKeyName: process.env.CDP_API_KEY_NAME!,
