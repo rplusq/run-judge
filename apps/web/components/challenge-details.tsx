@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { formatUnits, type Hash } from 'viem';
 import {
   Card,
@@ -55,6 +55,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import { toast } from 'sonner';
 import { baseSepolia } from 'viem/chains';
+import { triggerRunJudgeAgent } from '@/app/actions';
 
 interface ChallengeDetailsProps {
   challengeId: string;
@@ -117,9 +118,30 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   const [cancelTxHash, setCancelTxHash] = useState<Hash>();
   const [toastId, setToastId] = useState<string>();
 
+  // Extract activity ID from Strava URL or raw input
+  const extractActivityId = (input: string) => {
+    // Try to extract ID from URL first
+    const urlMatch = input.match(/strava\.com\/activities\/(\d+)/);
+    if (urlMatch) {
+      return urlMatch[1];
+    }
+    // If not URL, check if it's a valid number
+    if (/^\d+$/.test(input)) {
+      return input;
+    }
+    return null;
+  };
+
+  // Get validated activity ID
+  const validatedActivityId = useMemo(() => {
+    return extractActivityId(stravaActivityId);
+  }, [stravaActivityId]);
+
   // Add simulation hooks
   const { data: submitSimulation } = useSimulateRunJudgeSubmitActivity({
-    args: [BigInt(challengeId), BigInt(stravaActivityId || '0')],
+    args: validatedActivityId
+      ? [BigInt(challengeId), BigInt(validatedActivityId)]
+      : undefined,
     chainId: baseSepolia.id,
   });
 
@@ -147,7 +169,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
       if (isSubmitSuccess) {
         toast.success('Activity submitted successfully!', { id: toastId });
         // Add delay to allow subgraph to index
-        setTimeout(() => {
+        setTimeout(async () => {
           queryClient.invalidateQueries({
             queryKey: ['readRunJudgeChallenges'],
           });
@@ -157,6 +179,30 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
           queryClient.invalidateQueries({
             queryKey: ['challenge', challengeId],
           });
+
+          // If this is the second participant submitting, trigger the run judge agent
+          if (
+            challenge?.participants.length === 2 &&
+            challenge.participants.every((p) => p.stravaActivityId)
+          ) {
+            try {
+              await triggerRunJudgeAgent(
+                challengeId,
+                challenge.participants.map((p) => ({
+                  address: p.participant,
+                  activityId: p.stravaActivityId,
+                }))
+              );
+            } catch (error) {
+              console.error('Error triggering run judge agent:', error);
+              toast.error(
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to trigger run judge agent. Please try again later.'
+              );
+            }
+          }
+
           setShowConfirmation(false);
         }, 3000); // Wait 3 seconds for subgraph indexing
         setSubmitTxHash(undefined);
@@ -172,6 +218,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
     queryClient,
     toastId,
     challengeId,
+    challenge?.participants,
   ]);
 
   useEffect(() => {
@@ -236,20 +283,6 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   );
   const statusConfig = getStatusConfig(challenge);
 
-  // Extract activity ID from Strava URL or raw input
-  const extractActivityId = (input: string) => {
-    // Try to extract ID from URL first
-    const urlMatch = input.match(/strava\.com\/activities\/(\d+)/);
-    if (urlMatch) {
-      return urlMatch[1];
-    }
-    // If not URL, check if it's a valid number
-    if (/^\d+$/.test(input)) {
-      return input;
-    }
-    return null;
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setStravaActivityId(value);
@@ -257,8 +290,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   };
 
   const handleSubmitClick = () => {
-    const activityId = extractActivityId(stravaActivityId);
-    if (!activityId) {
+    if (!validatedActivityId) {
       setError('Please enter a valid Strava activity ID or URL');
       return;
     }
@@ -266,8 +298,10 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   };
 
   const handleConfirmedSubmit = async () => {
-    const activityId = extractActivityId(stravaActivityId);
-    if (!activityId) return;
+    if (!validatedActivityId) {
+      setError('Please enter a valid Strava activity ID or URL');
+      return;
+    }
 
     try {
       // Simulate submission first
@@ -277,7 +311,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
       }
 
       const txHash = await submitResult({
-        args: [BigInt(challengeId), BigInt(activityId)],
+        args: [BigInt(challengeId), BigInt(validatedActivityId)],
         chainId: baseSepolia.id,
       });
 
