@@ -16,7 +16,10 @@ export const loadAppConfig: () => AppConfig = () => ({
   chain: environment === 'production' ? base : baseSepolia,
   cdp: {
     apiKeyName: process.env.CDP_API_KEY_NAME!,
-    apiKeyPrivateKey: process.env.CDP_API_KEY_PRIVATE_KEY as Hex,
+    apiKeyPrivateKey: process.env.CDP_API_KEY_PRIVATE_KEY?.replace(
+      /\n/g,
+      '\n'
+    ) as Hex,
   },
   rpcUrl:
     environment === 'production'
