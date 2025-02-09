@@ -72,8 +72,11 @@ export async function capturePageWithCookies(
       ? convertCookieEditorFormat(cookies as CookieEditorCookie[])
       : (cookies as Cookie[]);
 
+  console.log('🏴‍☠️ Launching browser...');
+
   const browser = await chromium.launch({
     headless: true,
+    executablePath: '/usr/bin/chromium-browser',
     args: [
       '--disable-blink-features=AutomationControlled',
       '--disable-features=IsolateOrigins,site-per-process',
@@ -85,6 +88,13 @@ export async function capturePageWithCookies(
       '--no-xshm',
       '--window-size=1920,1080',
       '--start-maximized',
+
+      // Memory-saving flags
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-extensions',
+      '--js-flags=--max-old-space-size=512',
+      '--memory-limit=768',
     ],
   });
 
