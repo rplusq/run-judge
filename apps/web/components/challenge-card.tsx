@@ -30,6 +30,7 @@ interface ChallengeCardProps {
   creator?: string;
   userAddress?: string;
   challengeId: string;
+  isCancelled: boolean;
   onJoin?: () => void;
   onSubmit?: () => void;
   onCancel?: () => void;
@@ -81,6 +82,7 @@ export function ChallengeCard({
   onJoin,
   onSubmit,
   onCancel,
+  isCancelled,
 }: ChallengeCardProps) {
   const date = new Date(parseInt(startTime) * 1000);
   const distanceKm = parseInt(distance) / 1000;
@@ -89,8 +91,7 @@ export function ChallengeCard({
     creator &&
     userAddress &&
     creator.toLowerCase() === userAddress.toLowerCase();
-  const canCancel =
-    isCreator && status === 'open' && participants === 1 && onCancel;
+  const canCancel = isCreator && !isCancelled && participants === 1 && onCancel;
 
   const statusConfig = getStatusConfig(status);
 
