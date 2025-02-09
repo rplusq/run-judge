@@ -54,7 +54,7 @@ import { CompactIdentity, WinnerIdentity } from '@/components/identity-display';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import { toast } from 'sonner';
-import { base } from 'viem/chains';
+import { baseSepolia } from 'viem/chains';
 
 interface ChallengeDetailsProps {
   challengeId: string;
@@ -120,25 +120,25 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
   // Add simulation hooks
   const { data: submitSimulation } = useSimulateRunJudgeSubmitActivity({
     args: [BigInt(challengeId), BigInt(stravaActivityId || '0')],
-    chainId: base.id,
+    chainId: baseSepolia.id,
   });
 
   const { data: cancelSimulation } = useSimulateRunJudgeCancelChallenge({
     args: [BigInt(challengeId)],
-    chainId: base.id,
+    chainId: baseSepolia.id,
   });
 
   // Transaction receipt hooks
   const { isSuccess: isSubmitSuccess, isError: isSubmitError } =
     useWaitForTransactionReceipt({
       hash: submitTxHash,
-      chainId: base.id,
+      chainId: baseSepolia.id,
     });
 
   const { isSuccess: isCancelSuccess, isError: isCancelError } =
     useWaitForTransactionReceipt({
       hash: cancelTxHash,
-      chainId: base.id,
+      chainId: baseSepolia.id,
     });
 
   // Handle transaction states
@@ -242,7 +242,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
 
       const txHash = await submitResult({
         args: [BigInt(challengeId), BigInt(activityId)],
-        chainId: base.id,
+        chainId: baseSepolia.id,
       });
 
       const id = toast.loading('Submitting activity...').toString();
@@ -281,7 +281,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
 
       const txHash = await cancelChallenge({
         args: [BigInt(challengeId)],
-        chainId: base.id,
+        chainId: baseSepolia.id,
       });
 
       const id = toast.loading('Cancelling challenge...').toString();
@@ -359,7 +359,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="p-4">
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-baseSepolia">
                   <DollarSign className="h-4 w-4 text-primary" />
                   Entry Fee
                 </CardTitle>
@@ -370,7 +370,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
             </Card>
             <Card>
               <CardHeader className="p-4">
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-baseSepolia">
                   <Trophy className="h-4 w-4 text-primary" />
                   Total Prize
                 </CardTitle>
@@ -381,7 +381,7 @@ export function ChallengeDetails({ challengeId }: ChallengeDetailsProps) {
             </Card>
             <Card className="col-span-2 sm:col-span-1">
               <CardHeader className="p-4">
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-baseSepolia">
                   <Users className="h-4 w-4 text-primary" />
                   Participants
                 </CardTitle>
