@@ -18,7 +18,7 @@ export type Challenge = {
   winner: string | null;
   totalPrize: string;
   participants: {
-    address: string;
+    participant: string;
     hasSubmitted: boolean;
     stravaActivityId: string | null;
   }[];
@@ -36,7 +36,7 @@ export type UserChallenge = {
     winner: string | null;
     totalPrize: string;
     participants: {
-      address: string;
+      participant: string;
       hasSubmitted: boolean;
       stravaActivityId: string | null;
     }[];
@@ -59,7 +59,7 @@ export const GET_CHALLENGE = `
       totalPrize
       cancelledAt
       participants {
-        address
+        participant
         hasSubmitted
         stravaActivityId
       }
@@ -80,12 +80,43 @@ export const GET_USER_CHALLENGES = `
         winner
         cancelledAt
         participants {
+          participant
           hasSubmitted
           stravaActivityId
         }
       }
       hasSubmitted
       stravaActivityId
+    }
+  }
+`;
+
+export const GET_AVAILABLE_CHALLENGES = `
+  query GetAvailableChallenges($address: Bytes!) {
+    challenges(
+      where: {
+        isCancelled: false,
+        winner: null,
+        participants_: {
+          participant_not: $address
+        }
+      }
+      orderBy: startTime
+      orderDirection: desc
+    ) {
+      id
+      startTime
+      distance
+      entryFee
+      isActive
+      isCancelled
+      winner
+      totalPrize
+      participants {
+        participant
+        hasSubmitted
+        stravaActivityId
+      }
     }
   }
 `;
