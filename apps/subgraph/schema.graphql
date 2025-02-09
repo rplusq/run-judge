@@ -4,11 +4,13 @@ type Challenge @entity {
   distance: BigInt!
   entryFee: BigInt!
   isActive: Boolean!
+  isCancelled: Boolean!
   winner: Bytes
   winningActivityId: BigInt
   totalPrize: BigInt!
   participants: [Participant!]! @derivedFrom(field: "challenge")
   createdAt: BigInt!
+  cancelledAt: BigInt
 }
 
 type Participant @entity {

@@ -1,13 +1,19 @@
 declareWinner.t.sol
 # when caller is not agent
-## it should revert
+## it should revert with OnlyAgent
 # when caller is agent
 ## when challenge is not active
-### it should revert
+### it should revert with ChallengeNotActive
+## when challenge is cancelled
+### it should revert with ChallengeNotActive
 ## when activity ID does not match any submission
-### it should revert
+### it should revert with WinnerNotSubmitted
+## when not all participants have submitted
+### it should revert with ParticipantsNotSubmitted
+## when multiple participants have same activity ID
+### it should use first participant as winner
 ## when USDC transfer fails
-### it should revert
+### it should revert with PrizeTransferFailed
 ## when all conditions are met
 ### it should mark challenge as inactive
 ### it should set the winner based on activity ID

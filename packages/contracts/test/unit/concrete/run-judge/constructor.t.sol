@@ -13,6 +13,7 @@ contract Constructor_RunJudge_Unit_Concrete_Test is Base_Test {
             alice: createUser("Alice"),
             bob: createUser("Bob"),
             carol: createUser("Carol"),
+            charlie: createUser("Charlie"),
             attacker: createUser("Attacker")
         });
 

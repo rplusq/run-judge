@@ -102,6 +102,19 @@ export class Challenge extends Entity {
     this.set("isActive", Value.fromBoolean(value));
   }
 
+  get isCancelled(): boolean {
+    let value = this.get("isCancelled");
+    if (!value || value.kind == ValueKind.NULL) {
+      return false;
+    } else {
+      return value.toBoolean();
+    }
+  }
+
+  set isCancelled(value: boolean) {
+    this.set("isCancelled", Value.fromBoolean(value));
+  }
+
   get winner(): Bytes | null {
     let value = this.get("winner");
     if (!value || value.kind == ValueKind.NULL) {
@@ -168,6 +181,23 @@ export class Challenge extends Entity {
 
   set createdAt(value: BigInt) {
     this.set("createdAt", Value.fromBigInt(value));
+  }
+
+  get cancelledAt(): BigInt | null {
+    let value = this.get("cancelledAt");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set cancelledAt(value: BigInt | null) {
+    if (!value) {
+      this.unset("cancelledAt");
+    } else {
+      this.set("cancelledAt", Value.fromBigInt(<BigInt>value));
+    }
   }
 }
 

@@ -6,9 +6,9 @@ dataSources:
     name: RunJudge
     network: base-sepolia
     source:
-      address: '0xbabeC3dF164f14672c08AA277Af9936532c283Ba'
+      address: '0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0'
       abi: RunJudge
-      startBlock: 21638995
+      startBlock: 21648872
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -24,8 +24,10 @@ dataSources:
           handler: handleChallengeCreated
         - event: ChallengeJoined(indexed uint256,indexed address)
           handler: handleChallengeJoined
-        - event: ResultSubmitted(indexed uint256,indexed address,uint256)
-          handler: handleResultSubmitted
+        - event: ActivitySubmitted(indexed uint256,indexed address,uint256)
+          handler: handleActivitySubmitted
         - event: WinnerDeclared(indexed uint256,indexed uint256,address,uint256)
           handler: handleWinnerDeclared
+        - event: ChallengeCancelled(indexed uint256,indexed address,uint256)
+          handler: handleChallengeCancelled
       file: ./src/run-judge.ts

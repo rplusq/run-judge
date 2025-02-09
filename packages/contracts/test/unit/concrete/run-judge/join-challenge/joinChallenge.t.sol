@@ -15,25 +15,29 @@ contract JoinChallenge_RunJudge_Unit_Concrete_Test is Base_Test {
     function setUp() public override {
         super.setUp();
         startTime = uint40(block.timestamp + 1 hours);
-        challengeId = runJudge.createChallenge(startTime, DISTANCE, ENTRY_FEE);
-        usdc.mint(users.alice, ENTRY_FEE);
         vm.prank(users.alice);
-        usdc.approve(address(runJudge), ENTRY_FEE);
+        challengeId = runJudge.createChallenge(startTime, DISTANCE, ENTRY_FEE);
     }
 
     function test_RevertWhen_ChallengeNotActive() external {
         // First make challenge inactive by having agent declare a winner
-        vm.startPrank(users.alice);
+        vm.startPrank(users.bob);
         runJudge.joinChallenge(challengeId);
         vm.warp(startTime + 1);
-        runJudge.submitResult(challengeId, STRAVA_ACTIVITY_ID);
+        runJudge.submitActivity(challengeId, STRAVA_ACTIVITY_ID);
         vm.stopPrank();
+
+        // Have Alice submit
+        vm.prank(users.alice);
+        runJudge.submitActivity(challengeId, STRAVA_ACTIVITY_ID + 1);
         
+        // Declare winner to make challenge inactive
         vm.prank(users.agent);
         runJudge.declareWinner(challengeId, STRAVA_ACTIVITY_ID);
         
-        usdc.mint(users.bob, ENTRY_FEE);
-        vm.startPrank(users.bob);
+        // Try to join inactive challenge
+        usdc.mint(users.charlie, ENTRY_FEE);
+        vm.startPrank(users.charlie);
         usdc.approve(address(runJudge), ENTRY_FEE);
         vm.expectRevert(RunJudge.ChallengeNotActive.selector);
         runJudge.joinChallenge(challengeId);
@@ -43,25 +47,32 @@ contract JoinChallenge_RunJudge_Unit_Concrete_Test is Base_Test {
     function test_RevertWhen_ChallengeStarted() external {
         vm.warp(startTime + 1);
         
-        vm.prank(users.alice);
+        vm.prank(users.bob);
         vm.expectRevert(RunJudge.ChallengeStarted.selector);
         runJudge.joinChallenge(challengeId);
     }
 
-    function test_RevertWhen_AlreadyJoined() external {
-        vm.startPrank(users.alice);
-        runJudge.joinChallenge(challengeId);
+    function test_RevertWhen_ChallengeIsCancelled() external {
+        // Cancel the challenge
+        vm.prank(users.alice);
+        runJudge.cancelChallenge(challengeId);
         
-        vm.expectRevert(RunJudge.AlreadyJoined.selector);
+        // Try to join cancelled challenge
+        vm.prank(users.bob);
+        vm.expectRevert(RunJudge.ChallengeNotActive.selector);
         runJudge.joinChallenge(challengeId);
-        vm.stopPrank();
+    }
+
+    function test_RevertWhen_AlreadyJoined() external {
+        vm.expectRevert(RunJudge.AlreadyJoined.selector);
+        vm.prank(users.alice);
+        runJudge.joinChallenge(challengeId);
     }
 
     function test_RevertWhen_USDCTransferFails() external {
-        vm.prank(users.alice);
+        vm.startPrank(users.bob);
         usdc.approve(address(runJudge), 0); // Remove approval
         
-        vm.prank(users.alice);
         vm.expectRevert(abi.encodeWithSelector(IERC20Errors.ERC20InsufficientAllowance.selector, address(runJudge), 0, ENTRY_FEE));
         runJudge.joinChallenge(challengeId);
     }
@@ -69,21 +80,21 @@ contract JoinChallenge_RunJudge_Unit_Concrete_Test is Base_Test {
     function test_WhenAllConditionsAreMet() external {
         // Verify event emission
         vm.expectEmit({emitter: address(runJudge)});
-        emit ChallengeJoined(challengeId, users.alice);
+        emit ChallengeJoined(challengeId, users.bob);
 
-        vm.prank(users.alice);
+        vm.prank(users.bob);
         runJudge.joinChallenge(challengeId);
 
         // Verify participant is marked as joined
-        (bool hasJoined,,) = runJudge.participants(challengeId, users.alice);
+        (bool hasJoined,,) = runJudge.participants(challengeId, users.bob);
         assertTrue(hasJoined, "Participant should be marked as joined");
 
         // Verify participant is added to challengeParticipants array
-        address participant = runJudge.challengeParticipants(challengeId, 0);
-        assertEq(participant, users.alice, "Participant should be added to array");
+        address participant = runJudge.challengeParticipants(challengeId, 1); // Index 1 since creator is at 0
+        assertEq(participant, users.bob, "Participant should be added to array");
 
         // Verify challenge totalPrize is increased
-        (,,,,, uint256 totalPrize) = runJudge.challenges(challengeId);
-        assertEq(totalPrize, ENTRY_FEE, "Total prize should be increased by entry fee");
+        (,,,,, uint256 totalPrize, uint8 participantCount) = runJudge.challenges(challengeId);
+        assertEq(totalPrize, ENTRY_FEE * participantCount, "Total prize should be increased by entry fee");
     }
 } 

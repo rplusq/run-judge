@@ -2,8 +2,9 @@ import { BigInt } from '@graphprotocol/graph-ts';
 import {
   ChallengeCreated,
   ChallengeJoined,
-  ResultSubmitted,
+  ActivitySubmitted,
   WinnerDeclared,
+  ChallengeCancelled,
 } from '../generated/RunJudge/RunJudge';
 import { Challenge, Participant } from '../generated/schema';
 
@@ -13,6 +14,7 @@ export function handleChallengeCreated(event: ChallengeCreated): void {
   challenge.distance = event.params.distance;
   challenge.entryFee = event.params.entryFee;
   challenge.isActive = true;
+  challenge.isCancelled = false;
   challenge.totalPrize = BigInt.fromI32(0);
   challenge.createdAt = event.block.timestamp;
   challenge.save();
@@ -40,7 +42,7 @@ export function handleChallengeJoined(event: ChallengeJoined): void {
   }
 }
 
-export function handleResultSubmitted(event: ResultSubmitted): void {
+export function handleActivitySubmitted(event: ActivitySubmitted): void {
   const id =
     event.params.challengeId.toString() +
     '-' +
@@ -71,5 +73,15 @@ export function handleWinnerDeclared(event: WinnerDeclared): void {
   if (participant) {
     participant.isWinner = true;
     participant.save();
+  }
+}
+
+export function handleChallengeCancelled(event: ChallengeCancelled): void {
+  const challenge = Challenge.load(event.params.challengeId.toString());
+  if (challenge) {
+    challenge.isActive = false;
+    challenge.isCancelled = true;
+    challenge.cancelledAt = event.block.timestamp;
+    challenge.save();
   }
 }

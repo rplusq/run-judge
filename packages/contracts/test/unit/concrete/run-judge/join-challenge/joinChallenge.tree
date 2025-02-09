@@ -1,14 +1,19 @@
 joinChallenge.t.sol
 ├── when challenge is not active
-│   └── it should revert
+│   └── it should revert with ChallengeNotActive
 ├── when challenge has started
-│   └── it should revert
+│   └── it should revert with ChallengeStarted
+├── when challenge is cancelled
+│   └── it should revert with ChallengeNotActive
 ├── when caller has already joined
-│   └── it should revert
-├── when USDC transfer fails
-│   └── it should revert
+│   └── it should revert with AlreadyJoined
+├── when USDC transfer would fail
+│   └── it should revert with USDCTransferFailed
 └── when all conditions are met
-    ├── it should mark participant as joined
-    ├── it should add participant to challengeParticipants array
-    ├── it should increase challenge totalPrize
-    └── it should emit a {ChallengeJoined} event
+    ├── it should update state before transfer
+    │   ├── it should mark participant as joined
+    │   ├── it should add participant to challengeParticipants array
+    │   ├── it should increase challenge totalPrize
+    │   └── it should increase participantCount
+    ├── it should emit ChallengeJoined event before transfer
+    └── it should transfer USDC last

@@ -1,0 +1,13 @@
+cancelChallenge.t.sol
+├── when caller is not challenge creator
+│   └── it should revert with NotChallengeCreator
+├── when challenge has more than one participant
+│   └── it should revert with ChallengeFull
+└── when all conditions are met
+    ├── it should update state
+    │   ├── it should set challenge to inactive
+    │   └── it should set totalPrize to zero
+    ├── it should emit ChallengeCancelled event
+    └── it should update balances
+        ├── it should increase creator balance by refund amount
+        └── it should decrease contract balance by refund amount 
