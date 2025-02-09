@@ -1,0 +1,17 @@
+# fly.toml app configuration file generated for fitvau-analyzer on 2024-11-24T19:10:07+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'runjudge-agent'
+primary_region = 'mad'
+
+[build]
+
+[env]
+PORT = 3000
+
+[[vm]]
+memory = '512mb'
+cpu_kind = 'shared'
+cpus = 1

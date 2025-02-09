@@ -70,4 +70,4 @@ ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
 # Start the application
-CMD node apps/web/server.js
+CMD ["node", "apps/web/server.js"]
