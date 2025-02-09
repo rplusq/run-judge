@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { parseUnits, formatUnits } from 'viem';
+import { parseUnits, formatUnits, type Hash } from 'viem';
 import { useAccount } from 'wagmi';
 import { useQueryClient } from '@tanstack/react-query';
+import { useWaitForTransactionReceipt } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -29,6 +30,8 @@ import {
   useReadErc20Allowance,
   useReadErc20BalanceOf,
   runJudgeAddress,
+  useSimulateRunJudgeCreateChallenge,
+  useSimulateErc20Approve,
 } from '@/lib/wagmi/generated';
 import { WalletConnect } from '@/components/wallet-connect';
 import { baseSepolia } from 'viem/chains';
@@ -43,6 +46,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 const PRESET_DISTANCES = [
   { value: '1000', label: '1K', emoji: '🚶' },
@@ -106,6 +110,111 @@ export function CreateChallengeForm() {
   const [distance, setDistance] = useState<string>('2000');
   const [entryFee, setEntryFee] = useState<string>('10');
   const [showFundDialog, setShowFundDialog] = useState(false);
+  const [approveTxHash, setApproveTxHash] = useState<Hash>();
+  const [createTxHash, setCreateTxHash] = useState<Hash>();
+  const [toastId, setToastId] = useState<string>();
+
+  // Add simulation hooks
+  const { data: createSimulation } = useSimulateRunJudgeCreateChallenge({
+    args: address
+      ? [
+          getRelativeTime(relativeTime),
+          parseInt(distance),
+          parseUnits(entryFee, 6),
+        ]
+      : undefined,
+    chainId: baseSepolia.id,
+  });
+
+  const { data: approveSimulation } = useSimulateErc20Approve({
+    args: address
+      ? [runJudgeAddress[baseSepolia.id], BigInt(2) ** BigInt(256) - BigInt(1)]
+      : undefined,
+    chainId: baseSepolia.id,
+  });
+
+  // Transaction receipt hooks
+  const { isSuccess: isApproveSuccess, isError: isApproveError } =
+    useWaitForTransactionReceipt({
+      hash: approveTxHash,
+      chainId: baseSepolia.id,
+    });
+
+  const { isSuccess: isCreateSuccess, isError: isCreateError } =
+    useWaitForTransactionReceipt({
+      hash: createTxHash,
+      chainId: baseSepolia.id,
+    });
+
+  // Handle transaction states
+  useEffect(() => {
+    if (approveTxHash) {
+      if (isApproveSuccess) {
+        toast.success('USDC approved successfully', { id: toastId });
+        queryClient.invalidateQueries({
+          queryKey: ['readErc20Allowance'],
+        });
+        setApproveTxHash(undefined);
+        handleCreateChallenge();
+      } else if (isApproveError) {
+        toast.error('USDC approval failed', { id: toastId });
+        setApproveTxHash(undefined);
+      }
+    }
+  }, [isApproveSuccess, isApproveError, approveTxHash, queryClient, toastId]);
+
+  useEffect(() => {
+    if (createTxHash) {
+      if (isCreateSuccess) {
+        toast.success('Challenge created successfully!', { id: toastId });
+        queryClient.invalidateQueries({
+          queryKey: ['readRunJudgeChallenges'],
+        });
+        router.push('/dashboard');
+        setCreateTxHash(undefined);
+      } else if (isCreateError) {
+        toast.error('Failed to create challenge', { id: toastId });
+        setCreateTxHash(undefined);
+      }
+    }
+  }, [
+    isCreateSuccess,
+    isCreateError,
+    createTxHash,
+    queryClient,
+    router,
+    toastId,
+  ]);
+
+  const handleCreateChallenge = async () => {
+    try {
+      // Get the start time based on the selected mode
+      const startTime =
+        timeMode === 'specific'
+          ? Math.floor(new Date(date + 'T00:00:00.000Z').getTime() / 1000)
+          : getRelativeTime(relativeTime);
+
+      // Simulate create challenge
+      if (!createSimulation?.request) {
+        toast.error('Failed to simulate challenge creation');
+        return;
+      }
+
+      const txHash = await createChallenge({
+        args: [startTime, parseInt(distance), parseUnits(entryFee, 6)],
+        chainId: baseSepolia.id,
+      });
+
+      const id = toast.loading('Creating challenge...').toString();
+      setToastId(id);
+      setCreateTxHash(txHash as Hash);
+    } catch (error) {
+      console.error('Failed to create challenge:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create challenge'
+      );
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +222,8 @@ export function CreateChallengeForm() {
 
     const entryFeeNumber = parseFloat(entryFee);
     if (entryFeeNumber > 10) {
-      return; // Early return if entry fee is too high
+      toast.error('Entry fee cannot exceed 10 USDC');
+      return;
     }
 
     try {
@@ -121,30 +231,33 @@ export function CreateChallengeForm() {
 
       // Check if we need approval
       if (!allowance || allowance < entryFeeAmount) {
+        // Simulate approval first
+        if (!approveSimulation?.request) {
+          toast.error('Failed to simulate USDC approval');
+          return;
+        }
+
         // Approve max uint256 to save gas on future transactions
-        await approve({
+        const txHash = await approve({
           args: [
             runJudgeAddress[baseSepolia.id],
             BigInt(2) ** BigInt(256) - BigInt(1),
           ],
           chainId: baseSepolia.id,
         });
+
+        const id = toast.loading('Approving USDC...').toString();
+        setToastId(id);
+        setApproveTxHash(txHash as Hash);
+        return;
       }
 
-      // Get the start time based on the selected mode
-      const startTime =
-        timeMode === 'specific'
-          ? Math.floor(new Date(date + 'T00:00:00.000Z').getTime() / 1000)
-          : getRelativeTime(relativeTime);
-
-      await createChallenge({
-        args: [startTime, parseInt(distance), entryFeeAmount],
-        chainId: baseSepolia.id,
-      });
-
-      router.push('/dashboard');
+      await handleCreateChallenge();
     } catch (error) {
       console.error('Failed to create challenge:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create challenge'
+      );
     }
   };
 

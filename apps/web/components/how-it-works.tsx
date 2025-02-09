@@ -40,7 +40,7 @@ export function HowItWorks() {
 
         <div className="mx-auto mt-6 sm:mt-8 max-w-5xl">
           <dl className="grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-3">
-            {steps.map((step, index) => (
+            {steps.map((step) => (
               <div
                 key={step.name}
                 className={cn(

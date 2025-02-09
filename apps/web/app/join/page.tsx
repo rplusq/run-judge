@@ -1,12 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { AvailableChallengeList } from '@/components/available-challenge-list';
-import { Users } from 'lucide-react';
 
 export default function JoinPage() {
   return (
