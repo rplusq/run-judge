@@ -9,14 +9,16 @@ import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
 import { createWalletClient, http, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { baseSepolia } from 'viem/chains';
 import { runJudgeActionProvider } from './actions';
+import { loadAppConfig } from './config';
 import type {
   ActivityResponse,
   AgentAnalyzeInput,
   AgentConfig,
   Agent as AgentType,
 } from './types';
+
+const appConfig = loadAppConfig();
 
 export class Agent {
   private agent: AgentType | null;
@@ -45,8 +47,8 @@ export class Agent {
       );
       const walletClient = createWalletClient({
         account: agentAccount,
-        transport: http('https://rpc.ankr.com/base_sepolia'),
-        chain: baseSepolia,
+        transport: http(appConfig.rpcUrl),
+        chain: appConfig.chain,
       });
 
       const walletProvider = new ViemWalletProvider(walletClient);
@@ -66,6 +68,8 @@ export class Agent {
         You are a helpful agent that can interact onchain using the Coinbase Developer Platform AgentKit.
         You are empowered to interact onchain using your tools. If you ever need funds, you can request
         them from the faucet if you are on network ID 'base-sepolia'.
+        You can execute requests in either base-sepolia and base mainnet. Of course, you do not have
+        a faucet for mainnet.
         `,
       });
 

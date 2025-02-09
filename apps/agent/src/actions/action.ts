@@ -1,10 +1,13 @@
 import { customActionProvider, ViemWalletProvider } from '@coinbase/agentkit';
 import { encodeFunctionData } from 'viem';
+import { base, baseSepolia } from 'viem/chains';
 import { z } from 'zod';
+import { loadAppConfig } from '../config';
+import { AppConfig } from '../types';
 import { runJudgeABI } from './abi';
 import { DeclareWinnerSchema } from './schemas';
 
-const RUN_JUDGE_ADDRESS = '0x80eb5478b64BcF13cA45b555f7AfF1e67b1f48F0';
+const appConfig = loadAppConfig();
 
 export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
   name: 'declare_winner',
@@ -23,6 +26,8 @@ export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
     walletProvider: ViemWalletProvider,
     args: z.infer<typeof DeclareWinnerSchema>
   ) => {
+    validateEnvAndChain(walletProvider, appConfig);
+
     // Send transaction to the RunJudge contract to deeclare the winner of the challenge
     const data = encodeFunctionData({
       abi: runJudgeABI,
@@ -32,7 +37,7 @@ export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
 
     try {
       const txHash = await walletProvider.sendTransaction({
-        to: RUN_JUDGE_ADDRESS,
+        to: appConfig.contractAddress,
         data,
       });
 
@@ -45,3 +50,29 @@ export const runJudgeActionProvider = customActionProvider<ViemWalletProvider>({
     }
   },
 });
+
+// Simply validates env and network before sending a transaction
+const validateEnvAndChain = (
+  walletProvider: ViemWalletProvider,
+  appConfig: AppConfig
+) => {
+  const network = walletProvider.getNetwork();
+
+  if (
+    appConfig.environment === 'production' &&
+    network.chainId?.toString() !== base.id.toString()
+  ) {
+    throw new Error(
+      `Invalid chain ID for env production. Got ${network.chainId}, expected ${base.id.toString()}`
+    );
+  }
+
+  if (
+    appConfig.environment === 'development' &&
+    network.chainId?.toString() !== baseSepolia.id.toString()
+  ) {
+    throw new Error(
+      `Invalid chain ID for env development. Got ${network.chainId}, expected ${baseSepolia.id.toString()}`
+    );
+  }
+};
