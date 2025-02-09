@@ -1,34 +1,60 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Trophy, Coins, ArrowRight } from 'lucide-react';
 
 export function Hero() {
   return (
-    <div className="relative isolate px-4 sm:px-6 pt-10 sm:pt-14 lg:px-8">
-      <div className="mx-auto max-w-2xl py-16 sm:py-32 lg:py-40">
-        <div className="text-center space-y-8 sm:space-y-10">
-          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight">
-            Challenge friends to run together, winner takes all
+    <div className="relative isolate px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-2xl py-12 sm:py-20">
+        <div className="text-center space-y-6 sm:space-y-8">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center rounded-full px-3 py-1 text-sm leading-6 text-muted-foreground ring-1 ring-ring/10 hover:ring-ring/20">
+              Powered by{' '}
+              <a
+                href="https://base.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 ml-1 font-semibold text-primary"
+              >
+                Base <ArrowRight className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+            Run Together, Win Together ✨
           </h1>
-          <p className="text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground max-w-xl mx-auto">
-            Create running challenges with friends, set a prize pool, and let
-            our AI judge verify the winner through Strava. It&apos;s that
-            simple!
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-            <Button
-              asChild
-              size="lg"
-              className="w-full sm:w-auto px-8 py-6 text-base sm:text-lg"
-            >
-              <Link href="/create">Challenge a Friend</Link>
+
+          <div className="mx-auto max-w-xl space-y-4">
+            <p className="text-base sm:text-lg leading-7 text-muted-foreground">
+              Create fun running challenges with friends - no crypto knowledge
+              needed! Just connect your Strava, set a goal, and let our AI
+              handle the rest.
+            </p>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center gap-2">
+                <Trophy className="h-4 w-4 text-primary" />
+                <span>Fair & transparent</span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <Coins className="h-4 w-4 text-primary" />
+                <span>USDC prizes 💰</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href="/create">Start Your First Challenge</Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto px-8 py-6 text-base sm:text-lg"
+              className="w-full sm:w-auto"
             >
-              <Link href="/dashboard">View My Challenges</Link>
+              <Link href="/join">Browse Challenges</Link>
             </Button>
           </div>
         </div>
